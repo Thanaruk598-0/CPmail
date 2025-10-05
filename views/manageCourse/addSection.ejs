@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Section</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script>
+    // JS สำหรับ auto year จาก semester (ยังไว้เผื่อ แต่ไม่แสดง field year)
+    function autoYear() {
+      const semester = document.getElementById('semester').value;
+      
+      const hiddenYear = document.getElementById('hiddenYear');
+      const match = semester.match(/\/(\d{4})$/);
+      if (match) {
+        hiddenYear.value = match[1];
+      }
+    }
+    
+
+    let scheduleCount = 0;
+    function addScheduleSlot() {
+      scheduleCount++;
+      const container = document.getElementById('scheduleContainer');
+      const slotDiv = document.createElement('div');
+      slotDiv.className = 'schedule-slot mb-3 p-3 border rounded';
+      slotDiv.id = `scheduleSlot${scheduleCount}`;
+      slotDiv.innerHTML = `
+        <div class="row">
+          <div class="col-md-3">
+            <label class="form-label">Day</label>
+            <select class="form-select" name="scheduleDay[]" required>
+              <option value="">เลือกวัน</option>
+              <option value="จันทร์">จันทร์</option>
+              <option value="อังคาร">อังคาร</option>
+              <option value="พุธ">พุธ</option>
+              <option value="พฤหัสบดี">พฤหัสบดี</option>
+              <option value="ศุกร์">ศุกร์</option>
+              <option value="เสาร์">เสาร์</option>
+              <option value="อาทิตย์">อาทิตย์</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Start Time</label>
+            <input type="time" class="form-control" name="scheduleStart[]" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">End Time</label>
+            <input type="time" class="form-control" name="scheduleEnd[]" required>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label">&nbsp;</label>
+            <button type="button" class="btn btn-danger w-100" onclick="removeScheduleSlot('scheduleSlot${scheduleCount}')">Remove</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(slotDiv);
+    }
+    function removeScheduleSlot(slotId) {
+      const slot = document.getElementById(slotId);
+      if (slot) slot.remove();
+    }
+    // Init 1 slot เริ่มต้น
+    document.addEventListener('DOMContentLoaded', function() {
+      addScheduleSlot(); // เพิ่ม slot แรกอัตโนมัติ
+    });
+  </script>
+</head>
+<body class="bg-light">
+
+  <%- include('../partials/navbar', { currentUser: currentUser, activeMenu: activeMenu }) %>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div class="card">
+          <div class="card-header"><h4>Add New Section</h4></div>
+          <div class="card-body">
+            <form action="/manageCourse/add-section" method="POST">
+              <div class="mb-3">
+                <label class="form-label">Name (e.g., A)</label>
+                <input type="text" name="name" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Course</label>
+                <select name="course" id="course" class="form-select" required>
+                  <option value="">เลือก Course</option>
+                  <% courses.forEach(c => { %>
+                    <option value="<%= c._id %>"><%= c.courseId %> - <%= c.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Semester (e.g., 1/2567)</label>
+                <input type="text" name="semester" id="semester" class="form-control" required onchange="autoYear()">
+                <input type="hidden" id="hiddenYear" name="year" value=""> <!-- Hidden สำหรับส่ง year auto ไป backend -->
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Max Students</label>
+                <input type="number" name="maxStudents" class="form-control" min="1" value="50">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Lecturers (เลือกหลายคนได้)</label>
+                <div class="border p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                  <% lecturers.forEach(l => { %>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="lecturers[]" value="<%= l._id %>" id="lecturer<%= l._id %>">
+                      <label class="form-check-label" for="lecturer<%= l._id %>">
+                        <%= l.name %> (<%= l.email %>)
+                      </label>
+                    </div>
+                  <% }); %>
+                </div>
+                <small class="form-text text-muted">เลือกอาจารย์ผู้สอนหลายคนได้</small>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Schedule</label>
+                <button type="button" class="btn btn-outline-secondary mb-2" onclick="addScheduleSlot()">Add Schedule Slot</button>
+                <div id="scheduleContainer"></div>
+                <small class="form-text text-muted">เพิ่มสล็อตเรียนหลายวันได้ (วัน + เวลาเริ่ม-สิ้นสุด)</small>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Room (e.g., CS101)</label>
+                <input type="text" name="room" class="form-control">
+              </div>
+              <button type="submit" class="btn btn-primary">Add Section</button>
+              <a href="/manageCourse/list?tab=sections" class="btn btn-secondary">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

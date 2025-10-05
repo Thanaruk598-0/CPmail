@@ -3,11 +3,25 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const session = require("express-session");
+const detectUser = require("./middleware/detectUser");
+const mongoose = require("mongoose");
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var usersRouters = require('./routes/users');
+//login
+const userloginRoutes = require("./routes/user");
+
+const manageUserRouter = require('./routes/manageUser');
+
+const manageCourseRouter = require('./routes/manageCourse');
 
 var app = express();
+
+mongoose.connect("mongodb://localhost:27017/CPmail")
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.error(err));
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,13 +33,25 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use(session({
+  secret: "yoursecretkey",
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(detectUser);
+
+// Router ตาม path ที่เลือก
+app.use('/', indexRouter);            // หน้าแรก
+app.use('/users', usersRouters);      // /users/*
+app.use('/user', userloginRoutes); 
+app.use('/manageUser', manageUserRouter);
+app.use('/manageCourse', manageCourseRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
 
 // error handler
 app.use(function(err, req, res, next) {

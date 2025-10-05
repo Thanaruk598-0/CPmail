@@ -1,11 +1,3 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
-</html>
+<% layout('layout') -%>
+<h1 class="mb-4">ยินดีต้อนรับ <%= currentUser ? currentUser.name : "Guest" %>!</h1>
+<p>นี่คือหน้าแรกของแอป</p>
