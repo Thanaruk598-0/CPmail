@@ -1,3 +1,4 @@
+  <!--manageCourse/list-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -116,12 +117,13 @@
                 <td><%= item.credits %></td>
                 <td><%= item.semester %></td>
                 <td><%= item.lecturers ? item.lecturers.length : 0 %></td>
-                <td>
-                  <a href="/manageCourse/edit-course/<%= item._id %>" class="btn btn-sm btn-outline-primary me-1">Edit</a>
-                  <form method="POST" action="/manageCourse/delete-course/<%= item._id %>" style="display:inline;" onsubmit="return confirm('ยืนยันการลบ?')">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                  </form>
-                </td>
+                 <td>
+                    <a href="/manageCourse/course/<%= item._id %>" class="btn btn-sm btn-outline-info me-1">View</a>
+                    <a href="/manageCourse/edit-course/<%= item._id %>" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                    <form method="POST" action="/manageCourse/delete-course/<%= item._id %>" style="display:inline;" onsubmit="return confirm('ยืนยันการลบ?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                 </td>
               <% } else { %>
                 <td><%= item.name %></td>
                 <td><%= item.course ? `${item.course.courseId} - ${item.course.name}` : '-' %></td>
@@ -132,12 +134,13 @@
                 <td><%= item.lecturers ? item.lecturers.length : 0 %> (<%= item.lecturers ? item.lecturers.map(l => l.name).join(', ') : '-' %>)</td>
                 <td><%= item.maxStudents %></td>
                 <td><%= item.students ? item.students.length : 0 %> / <%= item.maxStudents %></td>
-                <td>
-                  <a href="/manageCourse/edit-section/<%= item._id %>" class="btn btn-sm btn-outline-primary me-1">Edit</a>
-                  <form method="POST" action="/manageCourse/delete-section/<%= item._id %>" style="display:inline;" onsubmit="return confirm('ยืนยันการลบ?')">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                  </form>
-                </td>
+<td>
+  <a href="/manageCourse/edit-section/<%= item._id %>" class="btn btn-warning btn-sm">Edit</a>
+  <form action="/manageCourse/delete-section/<%= item._id %>" method="POST" style="display:inline;">
+    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+  </form>
+  <a href="/manageCourse/section/<%= item._id %>" class="btn btn-info btn-sm">View</a>
+</td>
               <% } %>
             </tr>
           <% }); %>

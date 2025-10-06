@@ -14,6 +14,7 @@ function processRawToArray(rawValue) {
 }
 
 // GET /manageCourse/list - แสดง tabs Courses/Sections พร้อม search/filter/stats
+// GET /manageCourse/list - แสดง tabs Courses/Sections พร้อม search/filter/stats
 router.get('/list', checkAdmin, async (req, res) => {
   try {
     const { tab = 'courses', search, semester } = req.query;
@@ -38,20 +39,38 @@ router.get('/list', checkAdmin, async (req, res) => {
 
     let data;
     let stats;
+
     if (tab === 'courses') {
-      data = await Course.find(query)
-        .populate('lecturers', 'name') // สำหรับ count lecturers
-        .sort({ createdAt: -1 });
+      // ดึง Course ทั้งหมด
+      const courses = await Course.find(query).sort({ createdAt: -1 });
+
+      // นับ lecturers ของแต่ละ Course จาก Sections
+      const coursesWithLecturers = await Promise.all(courses.map(async course => {
+        const sections = await Section.find({ course: course._id }).populate('lecturers', 'name');
+        const lecturerSet = new Set();
+        sections.forEach(sec => {
+          sec.lecturers.forEach(l => lecturerSet.add(l._id.toString()));
+        });
+        return {
+          ...course.toObject(),
+          lecturers: Array.from(lecturerSet)
+        };
+      }));
+
+      data = coursesWithLecturers;
+
       stats = {
         totalCourses: await Course.countDocuments(),
         totalSections: await Section.countDocuments()
       };
-    } else {
+
+    } else { // tab === 'sections'
       data = await Section.find(query)
         .populate('course', 'name courseId') // สำหรับแสดง course
         .populate('students', 'name') // สำหรับ count students
         .populate('lecturers', 'name') // สำหรับ count lecturers และชื่อ
         .sort({ createdAt: -1 });
+
       stats = {
         totalSections: await Section.countDocuments(),
         totalCourses: await Course.countDocuments()
@@ -72,6 +91,7 @@ router.get('/list', checkAdmin, async (req, res) => {
     res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูล');
   }
 });
+
 
 // GET /manageCourse/add-course - Form เพิ่ม Course
 router.get('/add-course', checkAdmin, (req, res) => {
@@ -294,6 +314,55 @@ router.post('/delete-section/:id', checkAdmin, async (req, res) => {
     res.redirect('/manageCourse/list?tab=sections');
   } catch (err) {
     res.status(500).send('เกิดข้อผิดพลาด');
+  }
+});
+
+router.get('/course/:id', checkAdmin, async (req, res) => {
+  try {
+    const courseId = req.params.id;
+
+    // ดึงข้อมูล Course
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).send('ไม่พบรายวิชา');
+
+    // ดึง Sections ของ Course พร้อม Lecturers และ Students
+    const sections = await Section.find({ course: course._id })
+      .populate('lecturers', 'name email')
+      .populate('students', 'name studentId');
+
+    res.render('manageCourse/courseDetail', {
+      course,
+      sections,
+      activeMenu: 'manageCourse',
+      currentUser: res.locals.currentUser
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูลรายละเอียด');
+  }
+});
+
+
+// GET /manageCourse/section/:id - แสดงรายละเอียด Section
+router.get('/section/:id', checkAdmin, async (req, res) => {
+  try {
+    const sectionId = req.params.id;
+
+    const section = await Section.findById(sectionId)
+      .populate('course', 'name courseId credits description')
+      .populate('lecturers', 'name email')
+      .populate('students', 'name studentId email');
+
+    if (!section) return res.status(404).send('ไม่พบ Section');
+
+    res.render('manageCourse/sectionDetail', {
+      section,
+      activeMenu: 'manageCourse',
+      currentUser: res.locals.currentUser
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('เกิดข้อผิดพลาดในการดึงข้อมูล Section');
   }
 });
 

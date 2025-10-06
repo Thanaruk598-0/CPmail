@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>รายละเอียด Section</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+  <div class="container">
+    <h2 class="mb-4 text-center">📘 รายละเอียด Section</h2>
+
+    <div class="card p-4 shadow-sm">
+      <h4><b>ชื่อ Section:</b> <%= section.name %></h4>
+      <p><b>รายวิชา:</b> <%= section.course ? section.course.name : '-' %> (<%= section.course ? section.course.courseId : '' %>)</p>
+      <p><b>ภาคการศึกษา:</b> <%= section.semester %></p>
+      <p><b>ปีการศึกษา:</b> <%= section.year %></p>
+      <p><b>ห้องเรียน:</b> <%= section.room || '-' %></p>
+      <p><b>ตารางเรียน:</b> <%= section.schedule || '-' %></p>
+
+      <hr>
+      <h5>👨‍🏫 อาจารย์ผู้สอน</h5>
+      <% if (section.lecturers.length > 0) { %>
+        <ul>
+          <% section.lecturers.forEach(l => { %>
+            <li><%= l.name %> (<%= l.email %>)</li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p>ยังไม่มีอาจารย์ใน Section นี้</p>
+      <% } %>
+
+      <hr>
+      <h5>👩‍🎓 นักเรียนที่ลงทะเบียน</h5>
+      <% if (section.students.length > 0) { %>
+        <table class="table table-bordered mt-3">
+          <thead class="table-light">
+            <tr>
+              <th>รหัสนักศึกษา</th>
+              <th>ชื่อ</th>
+              <th>อีเมล</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% section.students.forEach(s => { %>
+              <tr>
+                <td><%= s.studentId %></td>
+                <td><%= s.name %></td>
+                <td><%= s.email %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <p>ยังไม่มีนักเรียนลงทะเบียนใน Section นี้</p>
+      <% } %>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/manageCourse/list?tab=sections" class="btn btn-secondary">ย้อนกลับ</a>
+    </div>
+  </div>
+</body>
+</html>

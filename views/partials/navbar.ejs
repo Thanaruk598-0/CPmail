@@ -17,7 +17,7 @@
              <%= currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) %>
           </span>
         </div>
-        <a class="btn btn-sm btn-light ms-2" href="/dashboard">Dashboard</a>
+        <a class="btn btn-sm btn-light ms-2" href="/Dashboard/dashboard">Admin Dashboard</a>
         <a class="btn btn-sm btn-primary ms-1" href="/user/logout">Logout</a>
       <% } else { %>
         <a class="btn btn-sm btn-light ms-2" href="/user/login">Login</a>
@@ -29,27 +29,36 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-0 nav-secondary">
   <div class="container-fluid">
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-      <li class="nav-item">
-        <a class="nav-link <% if(activeMenu === 'dashboard'){ %>active<% } %>" href="/dashboard">Dashboard</a>
-      </li>
-      <li class="nav-item">
-         <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>" href="/users/profile/<%= currentUser ? currentUser._id : '' %>">Profile</a>
-      </li>
+      
       <% if (currentUser && currentUser.role === 'admin') { %>
         <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>" href="/manageUser/list">User Management</a>
+          <a class="nav-link <% if(activeMenu === 'adminDashboard'){ %>active<% } %>" 
+          href="/Dashboard/dashboard">AdminDashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>" href="/manageUser/list">UserManagement</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>" href="/manageCourse/list">Courses&Sections</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'email'){ %>active<% } %>" href="/emails/compose">EmailManagement</a>
         </li>
       <% } %>
-      <% if (currentUser && currentUser.role === 'admin') { %>
+
+      <% if (currentUser && currentUser.role === 'lecturer') { %>
         <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'email'){ %>active<% } %>" href="/emails/compose">Email Management</a>
+          <a class="nav-link <% if(activeMenu === 'lecturerDashboard'){ %>active<% } %>" href="/lecturer/dashboard">LecturerDashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'myCourses'){ %>active<% } %>" href="/lecturer/mycourses">My Courses</a>
         </li>
       <% } %>
-      <% if (currentUser && currentUser.role === 'admin') { %>
-        <li class="nav-item">
-        <a class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>" href="/manageCourse/list">Courses & Sections</a>
+
+      <li class="nav-item">
+        <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>" href="/users/profile/<%= currentUser ? currentUser._id : '' %>">Profile</a>
       </li>
-      <% } %>
+
     </ul>
   </div>
 </nav>

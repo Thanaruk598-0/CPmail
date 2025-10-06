@@ -16,6 +16,8 @@ const manageUserRouter = require('./routes/manageUser');
 
 const manageCourseRouter = require('./routes/manageCourse');
 
+const Dashboard = require('./routes/adminDashboard');
+
 var app = express();
 
 mongoose.connect("mongodb://localhost:27017/CPmail")
@@ -47,6 +49,8 @@ app.use('/user', userloginRoutes);
 app.use('/manageUser', manageUserRouter);
 app.use('/manageCourse', manageCourseRouter);
 
+app.use('/Dashboard', Dashboard);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -61,7 +65,10 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error', {
+    message: err.message,
+    error: req.app.get('env') === 'development' ? err : {} // <-- ส่ง error เข้าไป
+  });
 });
 
 module.exports = app;

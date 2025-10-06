@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - FormEase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .status-card { border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .activity-item { padding: 12px; border-bottom: 1px solid #eee; }
+    .notification-badge { position: absolute; top: -5px; right: -5px; }
+    .quick-action { border-radius: 8px; padding: 20px; text-align: center; font-weight: 500; }
+    .chart-container { height: 300px; }
+  </style>
+</head>
+<body class="bg-light">
+
+  <%- include('partials/navbar', { user: currentUser, activeMenu: 'dashboard' }) %>
+
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <h1 class="h3 mb-1">Admin Dashboard</h1>
+        <p class="text-muted">Monitor and manage the FormEase system.</p>
+      </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="alert alert-success d-flex justify-content-between align-items-center">
+          <i class="fas fa-check-circle me-2"></i>
+          <span>System Status: All services operational</span>
+          <small class="text-muted">Last updated: Just now</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card status-card text-center bg-white">
+          <div class="card-body">
+            <h2 class="text-primary"><%= (totalForms || 0).toLocaleString() %></h2>
+            <p class="mb-2">Total Forms</p>
+            <small class="text-success"><i class="fas fa-arrow-up"></i> +<%= growthFromLastMonth || 0 %>% from last month</small>
+            <i class="fas fa-file-alt fa-2x text-primary mt-2"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card status-card text-center bg-white">
+          <div class="card-body">
+            <h2 class="text-warning"><%= pending || 0 %></h2>
+            <p class="mb-2">Pending Review</p>
+            <small class="text-warning">Requires attention</small>
+            <i class="fas fa-clock fa-2x text-warning mt-2"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card status-card text-center bg-white">
+          <div class="card-body">
+            <h2 class="text-success"><%= approved || 0 %></h2>
+            <p class="mb-2">Approved</p>
+            <small class="text-success"><%= approvalRate || 0 %>% approval rate</small>
+            <i class="fas fa-check fa-2x text-success mt-2"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card status-card text-center bg-white">
+          <div class="card-body">
+            <h2 class="text-danger"><%= rejected || 0 %></h2>
+            <p class="mb-2">Rejected</p>
+            <small class="text-danger"><%= rejectionRate || 0 %>% rejection rate</small>
+            <i class="fas fa-times fa-2x text-danger mt-2"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity & Notifications -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card bg-white">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Activity</h5>
+            <button class="btn btn-outline-secondary btn-sm">Refresh</button>
+          </div>
+          <div class="card-body">
+            <% if (recentActivity && recentActivity.length > 0) { %>
+              <% recentActivity.forEach(activity => { %>
+                <div class="activity-item d-flex align-items-center">
+                  <i class="fas fa-circle text-success me-3"></i>
+                  <div>
+                    <strong><%= activity.action || 'Action' %> by <%= activity.by || 'Unknown' %></strong>
+                    <p class="mb-0 small text-muted"><%= activity.details || 'No details' %></p>
+                    <small class="text-muted"><%= new Date(activity.time).toLocaleString('th-TH') %></small>
+                  </div>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p class="text-muted">No recent activity.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card bg-white position-relative">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Notifications</h5>
+            <span class="badge bg-primary notification-badge"><%= unreadNotifications || 0 %></span>
+          </div>
+          <div class="card-body">
+            <% if (recentNotifications && recentNotifications.length > 0) { %>
+              <% recentNotifications.forEach(notif => { %>
+                <div class="alert alert-info mb-2">
+                  <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                  <%= notif.message || 'Notification' %>
+                  <small class="d-block text-muted">15+ forms per hour</small>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <div class="alert alert-info mb-2">
+                <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                High Form Submission Volume
+                <small class="d-block text-muted">15+ forms per hour</small>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Status Distribution & System Health -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card bg-white">
+          <div class="card-header">
+            <h5 class="mb-0">Form Status Distribution</h5>
+            <p class="text-muted small">Overview of form statuses across all departments</p>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="statusChart"></canvas>
+            </div>
+            <div id="chart-data"
+              data-labels='<%- JSON.stringify(chartLabels || []) %>'
+              data-values='<%- JSON.stringify(chartValues || []) %>'
+              data-colors='<%- JSON.stringify(chartColors || []) %>'>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card bg-white">
+          <div class="card-header">
+            <h5 class="mb-0">System Health</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <span class="text-success"><i class="fas fa-check me-2"></i>API Services: <%= systemHealth?.api?.status || 'Unknown' %></span>
+            </div>
+            <div class="mb-3">
+              <span class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>Email Service: <%= systemHealth?.email?.status || 'Unknown' %></span>
+            </div>
+            <div>
+              <span class="text-success"><i class="fas fa-hdd me-2"></i>Storage: <%= systemHealth?.storage?.used || 0 %>% Used</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-white mt-3">
+          <div class="card-header">
+            <h5 class="mb-0">Recent Users</h5>
+          </div>
+          <div class="card-body">
+            <% if (recentUsers && recentUsers.length > 0) { %>
+              <% recentUsers.forEach(user => { %>
+                <div class="d-flex align-items-center mb-2">
+                  <img src="<%= user.avatarUrl || '/default-avatar.png' %>" alt="Avatar" class="rounded-circle me-3" width="40" height="40">
+                  <div>
+                    <strong><%= user.name || 'Unknown' %></strong>
+                    <br>
+                    <small class="text-muted"><%= user.role || 'User' %> • Last login: <%= user.lastLogin ? new Date(user.lastLogin).toLocaleString('th-TH') : 'Unknown' %></small>
+                  </div>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p class="text-muted">No recent users.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+      <div class="col-md-3">
+        <a href="/admin/users" class="card quick-action text-decoration-none text-white bg-primary">
+          <i class="fas fa-users fa-2x mb-2"></i>
+          <h6>Manage Users</h6>
+          <small>Add, edit, or remove users</small>
+        </a>
+      </div>
+      <div class="col-md-3">
+        <a href="/admin/courses" class="card quick-action text-decoration-none text-white bg-success">
+          <i class="fas fa-book fa-2x mb-2"></i>
+          <h6>Manage Courses</h6>
+          <small>Configure courses & sections</small>
+        </a>
+      </div>
+      <div class="col-md-3">
+        <a href="/admin/templates" class="card quick-action text-decoration-none text-white" style="background-color: #8B5CF6;">
+          <i class="fas fa-file-alt fa-2x mb-2"></i>
+          <h6>Form Templates</h6>
+          <small>Create and edit templates</small>
+        </a>
+      </div>
+      <div class="col-md-3">
+        <a href="/admin/reports" class="card quick-action text-decoration-none text-white bg-warning">
+          <i class="fas fa-chart-bar fa-2x mb-2"></i>
+          <h6>Generate Report</h6>
+          <small>Export analytics data</small>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const chartDiv = document.getElementById('chart-data');
+      const labels = JSON.parse(chartDiv.dataset.labels || '[]');
+      const values = JSON.parse(chartDiv.dataset.values || '[]');
+      const colors = JSON.parse(chartDiv.dataset.colors || '[]');
+
+      const ctx = document.getElementById('statusChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, backgroundColor: colors }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
