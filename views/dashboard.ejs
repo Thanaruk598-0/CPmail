@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+    }
+
+    /* Header */
+    header {
+      background-color: #1e40af; /* น้ำเงิน */
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+    .a-nav-main {
+      color: white;
+      margin: 0 12px;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .a-nav-main:hover {
+      text-decoration: underline;
+    }
+
+    /* โลโก้ */
+    .logo {
+      display: flex;
+      flex-direction: column;
+    }
+    .logo h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .logo span {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    /* ขวา - โปรไฟล์ + ปุ่ม logout */
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .avatar {
+      background-color: #2563eb;
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-info span {
+      font-size: 14px;
+    }
+    .user-info small {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .signin-btn, .signup-btn {
+      padding: 6px 14px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .signin-btn {
+      background-color: #2563eb; /* น้ำเงิน */
+      color: white;
+    }
+    .signin-btn:hover {
+      background-color: #1e3a8a;
+    }
+
+    .signup-btn {
+      background-color: #da1d1d; /* เขียว */
+      color: white;
+    }
+    .signup-btn:hover {
+      background-color: #15803d;
+    }
+
+    /* ✅ nav-sub */
+    .nav-sub {
+      display: flex;
+      background: #f3f4f6; /* เทาอ่อน */
+      border-bottom: 1px solid #d1d5db; /* ขอบล่าง */
+      padding: 8px 20px;
+      gap: 20px;
+    }
+    .a-nav-sub {
+      color: #1f2937; /* สีเทาเข้ม */
+      text-decoration: none;
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 4px;
+      transition: 0.2s;
+    }
+    .a-nav-sub:hover {
+      background: #e5e7eb; /* เทา hover */
+    }
+    .a-nav-sub.active {
+      background: #1e40af; 
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <h1>CPmail</h1>
+      <span>College of Computing</span>
+    </div>
+    <nav>
+      <a class="a-nav-main" href="/home">Home</a>
+      <a class="a-nav-main" href="/features">Features</a> 
+      <a class="a-nav-main" href="/about">About</a> 
+      <a class="a-nav-main" href="/contact">Contact</a> 
+
+       <% if (currentUser) { %>
+      <!-- ลิงก์เฉพาะ role -->
+      <% if (userRole === 'admin') { %>
+        <a href="/admin">Admin Panel</a>
+      <% } %>
+      <% if (userRole === 'lecturer' || userRole === 'admin') { %>
+        <a href="/lecturer">Lecturer</a>
+      <% } %>
+      <a href="/dashboard">Dashboard</a>
+    <% } %>
+    </nav>
+
+    <div class="profile">
+      <div class="avatar"><%= user.name.charAt(0) %></div>
+      <div class="user-info">
+        <span><%= user.name %></span>
+        <small><%= user.universityId %></small>
+      </div>
+      <a href="/logout" class="signup-btn">Log Out</a>
+    </div>
+  </header>
+  
+  <!-- ✅ Nav-Sub -->
+  <div class="nav-sub">
+    <a class="a-nav-sub active" href="#">Home</a>
+    <a class="a-nav-sub" href="#">Dashboard</a> 
+    <a class="a-nav-sub" href="#">Admin</a> 
+    <a class="a-nav-sub" href="#">Lecturer</a> 
+  </div>
+
+  <section>
+  <% if (!currentUser) { %>
+    <h2>Welcome to CPmail 🎉</h2>
+    <p>Please <a href="/login">Sign in</a> or <a href="/register">Sign up</a>.</p>
+  <% } else { %>
+    <h2>Welcome back, <%= currentUser.name %> 👋</h2>
+    <p>Your ID: <%= currentUser.universityId %></p>
+
+    <% if (userRole === 'admin') { %>
+      <h3>Admin Overview</h3>
+      <!-- ใส่การ์ด/ลิสต์สำหรับ admin -->
+    <% } else if (userRole === 'lecturer') { %>
+      <h3>Lecturer Overview</h3>
+      <!-- ใส่การ์ด/ลิสต์สำหรับอาจารย์ -->
+    <% } else { %>
+      <h3>Student Dashboard</h3>
+      <!-- ใส่การ์ด/ลิสต์สำหรับนิสิต -->
+    <% } %>
+  <% } %>
+</section>
+
+
+  <!-- Footer -->
+  <footer id="contact" style="padding:20px;text-align:center;">
+    <p>© <%= new Date().getFullYear() %> FormEase - Khon Kaen University</p>
+  </footer>
+
+</body>
+</html>

@@ -1,3 +1,502 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - FormEase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kku-blue': '#1e40af',
+                        'kku-blue-light': '#3b82f6',
+                        'kku-blue-dark': '#1e3a8a',
+                        'kku-gold': '#f59e0b',
+                        'kku-gold-light': '#fbbf24'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .error-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .bounce-in {
+            animation: bounceIn 1s ease-out;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .back-button {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(30, 64, 175, 0.3);
+        }
+        .secondary-button {
+            border: 2px solid #1e40af;
+            color: #1e40af;
+            transition: all 0.3s ease;
+        }
+        .secondary-button:hover {
+            background: #1e40af;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Custom SVG animations */
+        .book-page {
+            animation: pageFlip 3s ease-in-out infinite;
+        }
+        @keyframes pageFlip {
+            0%, 100% { transform: rotateY(0deg); }
+            50% { transform: rotateY(-15deg); }
+        }
+        
+        .shield-glow {
+            animation: shieldPulse 2s ease-in-out infinite;
+        }
+        @keyframes shieldPulse {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.3)); }
+            50% { filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.6)); }
+        }
+        
+        .error-code {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @media (max-width: 768px) {
+            .error-container {
+                min-height: calc(100vh - 60px);
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-kku-blue text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-kku-blue font-bold text-lg">F</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">FormEase</h1>
+                        <p class="text-blue-200 text-sm hidden md:block">Digital Form Management System</p>
+                    </div>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="#" onclick="goHome()" class="hover:text-blue-200 transition-colors font-medium">Home</a>
+                    <a href="#" onclick="goToDashboard()" class="hover:text-blue-200 transition-colors font-medium">Dashboard</a>
+                    <a href="#" onclick="getSupport()" class="hover:text-blue-200 transition-colors font-medium">Support</a>
+                </nav>
+                
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 hover:bg-kku-blue-light rounded-md transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden border-t border-blue-600 py-4">
+                <div class="flex flex-col space-y-3">
+                    <a href="#" onclick="goHome()" class="hover:text-blue-200 transition-colors font-medium">Home</a>
+                    <a href="#" onclick="goToDashboard()" class="hover:text-blue-200 transition-colors font-medium">Dashboard</a>
+                    <a href="#" onclick="getSupport()" class="hover:text-blue-200 transition-colors font-medium">Support</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Error Content Container -->
+    <div class="error-container">
+        <!-- 404 Error Page -->
+        <div id="error404" class="text-center max-w-2xl mx-auto px-4 fade-in">
+            <!-- 404 Illustration - Open Book -->
+            <div class="mb-8 bounce-in">
+                <svg class="w-48 h-48 md:w-64 md:h-64 mx-auto floating-animation" viewBox="0 0 400 300" fill="none">
+                    <!-- Book Base -->
+                    <rect x="80" y="120" width="240" height="160" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="2"/>
+                    
+                    <!-- Book Spine -->
+                    <rect x="80" y="120" width="20" height="160" rx="8" fill="#6b7280"/>
+                    
+                    <!-- Left Page -->
+                    <rect x="100" y="140" width="100" height="120" rx="4" fill="white" stroke="#e5e7eb" stroke-width="1" class="book-page"/>
+                    
+                    <!-- Right Page -->
+                    <rect x="200" y="140" width="100" height="120" rx="4" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                    
+                    <!-- Page Lines (Left) -->
+                    <line x1="110" y1="155" x2="190" y2="155" stroke="#e5e7eb" stroke-width="1"/>
+                    <line x1="110" y1="170" x2="190" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+                    <line x1="110" y1="185" x2="180" y2="185" stroke="#e5e7eb" stroke-width="1"/>
+                    <line x1="110" y1="200" x2="185" y2="200" stroke="#e5e7eb" stroke-width="1"/>
+                    
+                    <!-- Page Lines (Right) -->
+                    <line x1="210" y1="155" x2="290" y2="155" stroke="#e5e7eb" stroke-width="1"/>
+                    <line x1="210" y1="170" x2="290" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+                    <line x1="210" y1="185" x2="280" y2="185" stroke="#e5e7eb" stroke-width="1"/>
+                    <line x1="210" y1="200" x2="285" y2="200" stroke="#e5e7eb" stroke-width="1"/>
+                    
+                    <!-- 404 Text on Pages -->
+                    <text x="150" y="235" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1e40af" text-anchor="middle">4</text>
+                    <text x="200" y="235" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ef4444" text-anchor="middle">0</text>
+                    <text x="250" y="235" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1e40af" text-anchor="middle">4</text>
+                    
+                    <!-- Question Mark -->
+                    <circle cx="200" cy="80" r="25" fill="#fbbf24" opacity="0.8"/>
+                    <text x="200" y="90" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="white" text-anchor="middle">?</text>
+                    
+                    <!-- Floating Elements -->
+                    <circle cx="320" cy="60" r="4" fill="#3b82f6" opacity="0.6" class="floating-animation" style="animation-delay: -1s;"/>
+                    <circle cx="60" cy="80" r="3" fill="#f59e0b" opacity="0.6" class="floating-animation" style="animation-delay: -3s;"/>
+                    <circle cx="340" cy="200" r="5" fill="#10b981" opacity="0.6" class="floating-animation" style="animation-delay: -2s;"/>
+                </svg>
+            </div>
+            
+            <!-- Error Message -->
+            <div class="mb-8">
+                <h1 class="text-6xl md:text-8xl font-bold error-code mb-4">404</h1>
+                <h2 class="text-2xl md:text-3xl font-semibold text-gray-800 mb-4">Page Not Found</h2>
+                <p class="text-lg text-gray-600 mb-2 leading-relaxed">
+                    Oops! The page you're looking for seems to have wandered off from our digital library.
+                </p>
+                <p class="text-gray-500">
+                    The page might have been moved, deleted, or you may have entered an incorrect URL.
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="goHome()" class="back-button text-white px-8 py-3 rounded-lg font-semibold text-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Back to Home
+                </button>
+                <button onclick="goBack()" class="secondary-button bg-white px-8 py-3 rounded-lg font-semibold text-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Go Back
+                </button>
+            </div>
+            
+            <!-- Helpful Links -->
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <p class="text-gray-600 mb-4">Looking for something specific?</p>
+                <div class="flex flex-wrap justify-center gap-4 text-sm">
+                    <a href="#" onclick="goToDashboard()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">Dashboard</a>
+                    <a href="#" onclick="goToForms()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">My Forms</a>
+                    <a href="#" onclick="getSupport()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">Help Center</a>
+                    <a href="#" onclick="contactSupport()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">Contact Support</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 403 Error Page -->
+        <div id="error403" class="hidden text-center max-w-2xl mx-auto px-4 fade-in">
+            <!-- 403 Illustration - Locked Shield -->
+            <div class="mb-8 bounce-in">
+                <svg class="w-48 h-48 md:w-64 md:h-64 mx-auto floating-animation shield-glow" viewBox="0 0 400 300" fill="none">
+                    <!-- Shield Base -->
+                    <path d="M200 50 L160 70 L160 150 Q160 180 200 200 Q240 180 240 150 L240 70 Z" fill="#ef4444" opacity="0.9"/>
+                    <path d="M200 60 L170 75 L170 145 Q170 170 200 185 Q230 170 230 145 L230 75 Z" fill="#dc2626"/>
+                    
+                    <!-- Shield Highlight -->
+                    <path d="M200 60 L175 72 L175 100 Q175 110 185 115 Q195 110 195 100 L195 72 Z" fill="#fca5a5" opacity="0.6"/>
+                    
+                    <!-- Lock Icon -->
+                    <rect x="185" y="120" width="30" height="25" rx="3" fill="white"/>
+                    <rect x="190" y="115" width="20" height="15" rx="10" fill="none" stroke="white" stroke-width="3"/>
+                    <circle cx="200" cy="135" r="3" fill="#ef4444"/>
+                    <rect x="198" y="138" width="4" height="6" fill="#ef4444"/>
+                    
+                    <!-- 403 Text -->
+                    <text x="200" y="220" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#ef4444" text-anchor="middle">403</text>
+                    
+                    <!-- Warning Symbols -->
+                    <circle cx="120" cy="80" r="15" fill="#fbbf24" opacity="0.8"/>
+                    <text x="120" y="87" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">!</text>
+                    
+                    <circle cx="280" cy="100" r="12" fill="#fbbf24" opacity="0.8"/>
+                    <text x="280" y="106" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">!</text>
+                    
+                    <!-- Floating Warning Elements -->
+                    <polygon points="340,60 350,80 330,80" fill="#ef4444" opacity="0.6" class="floating-animation" style="animation-delay: -1s;"/>
+                    <text x="340" y="75" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">!</text>
+                    
+                    <polygon points="70,120 80,140 60,140" fill="#ef4444" opacity="0.6" class="floating-animation" style="animation-delay: -3s;"/>
+                    <text x="70" y="135" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white" text-anchor="middle">!</text>
+                </svg>
+            </div>
+            
+            <!-- Error Message -->
+            <div class="mb-8">
+                <h1 class="text-6xl md:text-8xl font-bold error-code mb-4">403</h1>
+                <h2 class="text-2xl md:text-3xl font-semibold text-gray-800 mb-4">Access Forbidden</h2>
+                <p class="text-lg text-gray-600 mb-2 leading-relaxed">
+                    Sorry, you don't have permission to access this resource.
+                </p>
+                <p class="text-gray-500">
+                    This area is restricted or requires special authorization to view.
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="goHome()" class="back-button text-white px-8 py-3 rounded-lg font-semibold text-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Back to Home
+                </button>
+                <button onclick="requestAccess()" class="secondary-button bg-white px-8 py-3 rounded-lg font-semibold text-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                    </svg>
+                    Request Access
+                </button>
+            </div>
+            
+            <!-- Helpful Information -->
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <p class="text-gray-600 mb-4">Need help with access?</p>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="text-left">
+                            <p class="text-blue-800 font-medium mb-1">Access Requirements</p>
+                            <p class="text-blue-700 text-sm">
+                                This page requires special permissions. Contact your administrator or IT support if you believe you should have access.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4 text-sm">
+                    <a href="#" onclick="goToDashboard()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">Dashboard</a>
+                    <a href="#" onclick="contactAdmin()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">Contact Admin</a>
+                    <a href="#" onclick="getSupport()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">IT Support</a>
+                    <a href="#" onclick="viewPermissions()" class="text-kku-blue hover:text-kku-blue-dark transition-colors font-medium">My Permissions</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                    <div class="w-8 h-8 bg-kku-blue rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">F</span>
+                    </div>
+                    <div>
+                        <p class="font-semibold">FormEase</p>
+                        <p class="text-gray-400 text-sm">Khon Kaen University</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-6 text-sm">
+                    <a href="#" onclick="getSupport()" class="text-gray-300 hover:text-white transition-colors">Support</a>
+                    <a href="#" onclick="contactSupport()" class="text-gray-300 hover:text-white transition-colors">Contact</a>
+                    <span class="text-gray-500">© 2024 KKU</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize page based on URL or error type
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check URL or use default (404)
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorType = urlParams.get('error') || '404';
+            showError(errorType);
+        });
+
+        // Show specific error page
+        function showError(type) {
+            const error404 = document.getElementById('error404');
+            const error403 = document.getElementById('error403');
+            
+            if (type === '403') {
+                error404.classList.add('hidden');
+                error403.classList.remove('hidden');
+                document.title = '403 Forbidden - FormEase';
+            } else {
+                error403.classList.add('hidden');
+                error404.classList.remove('hidden');
+                document.title = '404 Not Found - FormEase';
+            }
+        }
+
+        // Navigation functions
+        function goHome() {
+            showMessage('Redirecting to home page...', 'info');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        }
+
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                goHome();
+            }
+        }
+
+        function goToDashboard() {
+            showMessage('Redirecting to dashboard...', 'info');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+        }
+
+        function goToForms() {
+            showMessage('Redirecting to forms...', 'info');
+            setTimeout(() => {
+                window.location.href = '/forms';
+            }, 1000);
+        }
+
+        // 403 specific functions
+        function requestAccess() {
+            showMessage('Access request submitted. You will be notified when reviewed.', 'success');
+        }
+
+        function contactAdmin() {
+            showMessage('Opening admin contact form...', 'info');
+            setTimeout(() => {
+                alert('Admin Contact: admin@formease.kku.ac.th\nPhone: +66 43 202 555');
+            }, 1000);
+        }
+
+        function viewPermissions() {
+            showMessage('Redirecting to permissions page...', 'info');
+            setTimeout(() => {
+                window.location.href = '/permissions';
+            }, 1000);
+        }
+
+        // Support functions
+        function getSupport() {
+            showMessage('Opening support center...', 'info');
+            setTimeout(() => {
+                window.open('/support', '_blank', 'noopener,noreferrer');
+            }, 1000);
+        }
+
+        function contactSupport() {
+            showMessage('Opening support contact...', 'info');
+            setTimeout(() => {
+                alert('Support Contact:\nEmail: support@formease.kku.ac.th\nPhone: +66 43 202 555\nHours: Mon-Fri 8:00-17:00');
+            }, 1000);
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Show message function
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 p-4 rounded-md text-sm font-medium z-50 max-w-sm ${
+                type === 'success' ? 'bg-green-100 border border-green-200 text-green-800' :
+                type === 'error' ? 'bg-red-100 border border-red-200 text-red-800' :
+                'bg-blue-100 border border-blue-200 text-blue-800'
+            }`;
+            messageDiv.textContent = message;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                if (document.body.contains(messageDiv)) {
+                    document.body.removeChild(messageDiv);
+                }
+            }, 3000);
+        }
+
+        // URL-based error switching for demo
+        function switchTo404() {
+            showError('404');
+            window.history.pushState({}, '', '?error=404');
+        }
+
+        function switchTo403() {
+            showError('403');
+            window.history.pushState({}, '', '?error=403');
+        }
+
+        // Add demo buttons for testing (remove in production)
+        document.addEventListener('DOMContentLoaded', function() {
+            const demoButtons = document.createElement('div');
+            demoButtons.className = 'fixed bottom-4 left-4 flex gap-2 z-50';
+            demoButtons.innerHTML = `
+                <button onclick="switchTo404()" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 transition-colors">
+                    Show 404
+                </button>
+                <button onclick="switchTo403()" class="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 transition-colors">
+                    Show 403
+                </button>
+            `;
+            document.body.appendChild(demoButtons);
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const menuButton = e.target.closest('button[onclick="toggleMobileMenu()"]');
+            
+            if (!menuButton && !mobileMenu.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98860fbc22a8d334',t:'MTc1OTQyNzYyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
+

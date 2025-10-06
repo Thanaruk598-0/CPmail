@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FormEase | Khon Kaen University</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+    }
+
+    /* Header */
+    header {
+      background-color: #1e40af; /* น้ำเงิน */
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+   .a-nav {
+      color: white;
+    }
+
+    /* โลโก้ */
+    .logo {
+      display: flex;
+      flex-direction: column;
+    }
+    .logo h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .logo span {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    /* ขวา - โปรไฟล์ + ปุ่ม logout */
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .avatar {
+      background-color: #2563eb;
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-info span {
+      font-size: 14px;
+    }
+    .user-info small {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .signin-btn, .signup-btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.signin-btn {
+  background-color: #2563eb; /* น้ำเงิน */
+  color: white;
+}
+.signin-btn:hover {
+  background-color: #1e3a8a;
+}
+
+.signup-btn {
+  background-color: #16a34a; /* เขียว */
+  color: white;
+}
+.signup-btn:hover {
+  background-color: #15803d;
+}
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <h1>CPmail</h1>
+      <span>College of Computing</span>
+    </div>
+    <nav>
+      <a class="a-nav" href="/home">Home</a>
+      <a class="a-nav" href="/features">Features</a> 
+      <a class="a-nav" href="/bout">About</a> 
+      <a class="a-nav" href="/contact">Contact</a> 
+
+  </nav>
+    </nav>
+
+     <div class="profile">
+  <a href="/login" class="signin-btn">Sign in</a>
+  <a href="/register" class="signup-btn">Sign up</a>
+</div>
+  </header>
+
+  <!-- Hero -->
+  <section>
+    <h2>Digital Form Management System</h2>
+    <p>Submit, track, and manage all your academic and administrative forms in one place.</p>
+    <a href="/register">Get Started</a>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <h3>Key Features</h3>
+   
+  </section>
+
+  <!-- About -->
+  <section id="about">
+    <h3>About FormEase</h3>
+   
+  </section>
+
+  <!-- CTA -->
+  <section>
+    <h3>Ready to get started?</h3>
+    <p>Join thousands of users who already streamline their tasks with FormEase.</p>
+    <a href="/register">สมัครบัญชี</a>
+  </section>
+
+
+  <% if (!user) { %>
+    <h1>Welcome to CPmail 🎉</h1>
+    <p>Please <a href="/login">Sign in</a> or <a href="/register">Sign up</a>.</p>
+  <% } else { %>
+    <h1>Welcome back, <%= user.name %> 👋</h1>
+    <p>Your ID: <%= user.universityId %></p>
+    <a href="/logout">Logout</a>
+  <% } %>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <p>© <%= new Date().getFullYear() %> FormEase - Khon Kaen University</p>
+  </footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lecturer Dashboard | CPmail</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f9fafb;
+    }
+    header {
+      background: #2563eb; /* ฟ้า */
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    nav a {
+      color: white;
+      margin-left: 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card h2 {
+      margin-top: 0;
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <h1>CPmail Lecturer</h1>
+    </div>
+    <nav>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/lecturer">Lecturer Panel</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Welcome, <%= currentUser.name %> 🎓</h2>
+    <p>Your role: <b><%= currentUser.role %></b></p>
+    <p>ID: <%= currentUser.universityId %></p>
+
+    <div class="card">
+      <h2>Course Management</h2>
+      <p>Manage your courses, update information, and view enrolled students.</p>
+      <a href="/lecturer/courses">Go to Courses</a>
+    </div>
+
+    <div class="card">
+      <h2>Announcements</h2>
+      <p>Create announcements for students in your courses.</p>
+      <a href="/lecturer/announcements">Manage Announcements</a>
+    </div>
+
+    <div class="card">
+      <h2>Student Requests</h2>
+      <p>Review and approve academic requests submitted by students.</p>
+      <a href="/lecturer/requests">View Requests</a>
+    </div>
+  </main>
+</body>
+</html>

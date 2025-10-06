@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+</head>
+<body>
+  <h2>ล็อกอิน</h2>
+
+  <form action="/login" method="POST">
+    <label>อีเมล(@kkumail.com):</label><br>
+    <input type="email" name="email" required><br><br>
+
+    <label>รหัสผ่าน:</label><br>
+    <input type="password" name="password" required><br><br>
+
+    <label>ยืนยันรหัสผ่าน:</label><br>
+    <input type="password" name="confirmPassword" required><br><br>
+
+    <button type="submit">ล็อกอิน</button>
+  </form>
+
+  <p>
+    ยังไม่มีบัญชี? <a href="/register">ลงทะเบียน</a>
+  </p>
+   <p>
+     <a href="/forgotpassword">ลืมรหัสผ่าน?</a>
+  </p>
+</body>
+</html>

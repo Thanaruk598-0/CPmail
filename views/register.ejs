@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+</head>
+<body>
+  <h2>Register</h2>
+
+  <form action="/register" method="POST">
+    <label>รหัสนักศึกษา:</label><br>
+    <input type="text" name="universityId" required><br><br>
+
+    <label>ชื่อ-นามสกุล:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>อีเมล(@kkumail.com):</label><br>
+    <input type="email" name="email" required><br><br>
+
+     <label>วัน เดือน ปีเกิด:</label><br>
+    <input type="date" name="dateOfBirth" required><br><br>
+
+    <div>
+     <label>ชั้นปี:</label><br>
+    <select name="yearOfStudy" id="yearOfStudy">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    </select>
+    </div>
+    <br>
+    <div>
+    <label>สาขา:</label><br>
+    <select name="major" id="major">
+    <option value="วิทยาการคอมพิวเตอร์">วิทยาการคอมพิวเตอร์</option>
+    <option value="เทคโนโลยีสารสนเทศ">เทคโนโลยีสารสนเทศ</option>
+    <option value="ภูมิสารสนเทศศาสตร์">ภูมิสารสนเทศศาสตร์</option>
+    <option value="ปัญญาประดิษฐ์">ปัญญาประดิษฐ์</option>
+    <option value="ความมั่นคงปลอดภัยไซเบอร์">ความมั่นคงปลอดภัยไซเบอร์</option>
+    </select>
+    </div>
+    <br>
+    <label>รหัสผ่าน:</label><br>
+    <input type="password" name="password" required><br><br>
+
+    <label>ยืนยันรหัสผ่าน:</label><br>
+    <input type="password" name="confirmPassword" required><br><br>
+
+    <button type="submit">ลงทะเบียน</button>
+  </form>
+
+  <p>
+    มีบัญชีอยู่แล้ว? <a href="/login">ล็อกอิน</a>
+  </p>
+</body>
+</html>
