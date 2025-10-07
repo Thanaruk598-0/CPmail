@@ -9,6 +9,7 @@ const sectionSchema = new Schema({
   semester: { type: String },
   year: { type: Number },
   maxStudents: { type: Number },
-});
+}, { timestamps: true }
+);
 
 module.exports = mongoose.model("Section", sectionSchema);

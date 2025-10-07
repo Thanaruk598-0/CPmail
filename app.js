@@ -6,9 +6,9 @@ var logger = require("morgan");
 var mongoose = require("mongoose");
 
 // Test
-// const session = require("express-session");
+const session = require("express-session");
 
-// const authRouter = require("./routes/auth");
+const authRouter = require("./routes/auth");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -40,6 +40,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static("public"));
 
 // test session
 app.use(

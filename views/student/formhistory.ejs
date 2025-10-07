@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Form History</title>
+</head>
+<body>
+  <h1>Form History</h1>
+
+  <!-- Summary -->
+  <section>
+    <h2>Summary</h2>
+    <ul>
+      <li>Total: <%= totals.all %></li>
+      <li>Approved: <%= totals.approved %></li>
+      <li>Pending: <%= totals.pending %></li>
+      <li>Rejected: <%= totals.rejected %></li>
+      <li>Cancelled: <%= totals.cancelled %></li>
+    </ul>
+  </section>
+
+  <!-- Actions -->
+  <p>
+    <a href="<%= submitNewFormUrl %>">Submit New Form</a>
+  </p>
+
+  <!-- Filters -->
+  <section>
+    <h2>Filters</h2>
+    <form method="get">
+      <div>
+        <label>Search:
+          <input type="text" name="q" value="<%= filters.q || '' %>" placeholder="ชื่อฟอร์ม / ประเภท Template / ชื่ออาจารย์" />
+        </label>
+      </div>
+
+      <div>
+        <label>Status:
+          <select name="status">
+            <option value="all"      <%= filters.status === 'all' ? 'selected' : '' %>>All</option>
+            <option value="approved" <%= filters.status === 'approved' ? 'selected' : '' %>>approved</option>
+            <option value="pending"  <%= filters.status === 'pending' ? 'selected' : '' %>>pending</option>
+            <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>rejected</option>
+            <option value="cancelled"<%= filters.status === 'cancelled' ? 'selected' : '' %>>cancelled</option>
+          </select>
+        </label>
+      </div>
+
+      <div>
+        <label>From Date (createdAt):
+          <input type="date" name="from" value="<%= filters.from || '' %>" />
+        </label>
+      </div>
+
+      <div>
+        <label>To Date (updatedAt):
+          <input type="date" name="to" value="<%= filters.to || '' %>" />
+        </label>
+      </div>
+
+      <div>
+        <label>Per page:
+          <select name="limit">
+            <option value="10" <%= Number(filters.limit) === 10 ? 'selected' : '' %>>10</option>
+            <option value="20" <%= Number(filters.limit) === 20 ? 'selected' : '' %>>20</option>
+            <option value="50" <%= Number(filters.limit) === 50 ? 'selected' : '' %>>50</option>
+          </select>
+        </label>
+      </div>
+
+      <div>
+        <button type="submit">Apply</button>
+        <a href="?status=all">Clear All Filters</a>
+      </div>
+    </form>
+  </section>
+
+  <!-- Result info -->
+  <section>
+    <p>พบ <strong><%= filteredTotal %></strong> รายการ</p>
+  </section>
+
+  <!-- Table -->
+  <section>
+    <table border="1" cellpadding="6" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Form Details</th>
+          <th>Submission Date</th>
+          <th>Status</th>
+          <th>Reviewer</th>
+          <th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!items || items.length === 0) { %>
+          <tr>
+            <td colspan="5" align="center">ไม่มีข้อมูล</td>
+          </tr>
+        <% } else { %>
+          <% items.forEach(function(row){ %>
+            <tr>
+              <td>
+                <div><strong><%= row.template && row.template.name ? row.template.name : '-' %></strong></div>
+                <div>
+                  <% if (row.template && row.template.type) { %>Type: <%= row.template.type %> <% } %>
+                  <% if (row.course && row.course.name) { %> | Course: <%= row.course.name %> <% } %>
+                  <% if (row.section && row.section.name) { %> | Section: <%= row.section.name %> <% } %>
+                  | ID: <%= row._id %>
+                </div>
+              </td>
+              <td>
+            <% if (row.createdAt) { %>
+                <%= new Date(row.createdAt).toLocaleString() %>
+            <% } else { %>-<% } %>
+            </td>
+                        <td><%= row.status %></td>
+                        <td><%= row.reviewer && row.reviewer.name ? row.reviewer.name : '-' %></td>
+                        <td>
+            <% if (row.updatedAt) { %>
+                <%= new Date(row.updatedAt).toLocaleString() %>
+            <% } else { %>-<% } %>
+            </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Pagination -->
+  <section>
+    <p>
+      Page <%= pagination.page %> / <%= pagination.totalPages %>
+    </p>
+    <div>
+      <% 
+        function linkTo(p){
+          const params = new URLSearchParams({
+            q: filters.q || '',
+            status: filters.status || 'all',
+            from: filters.from || '',
+            to: filters.to || '',
+            limit: String(filters.limit || 10),
+            page: String(p)
+          });
+          return `?${params.toString()}`
+        }
+      %>
+
+      <% if (pagination.page > 1) { %>
+        <a href="<%= linkTo(pagination.page - 1) %>">Prev</a>
+      <% } else { %>
+        <span>Prev</span>
+      <% } %>
+
+      <% if (pagination.page < pagination.totalPages) { %>
+        <a href="<%= linkTo(pagination.page + 1) %>">Next</a>
+      <% } else { %>
+        <span>Next</span>
+      <% } %>
+    </div>
+  </section>
+
+</body>
+</html>

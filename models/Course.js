@@ -9,6 +9,6 @@ const courseSchema = new Schema({
   semester: { type: String },
   sections: [{ type: Schema.Types.ObjectId, ref: "Section" }],
   lecturers: [{ type: Schema.Types.ObjectId, ref: "User" }],
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Course", courseSchema);
