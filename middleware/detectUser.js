@@ -1,13 +1,17 @@
-const User = require('../models/user');
+const User = require('../models/User');
 
 const detectUser = async (req, res, next) => {
-  if (req.session.userId) {
+  if (req.session && req.session.userId) {
     try {
-      const user = await User.findById(req.session.userId).select('-password'); // เอา password ออก
+      const user = await User.findById(req.session.userId).select('-password');
       if (user) {
-        req.user = user;            // ให้ router ใช้ได้
-        res.locals.currentUser = user; // ให้ view ใช้ได้
+        req.user = user;
+        res.locals.currentUser = user;
       } else {
+        // ถ้า user หาย ล้าง session
+        req.session.destroy((err) => {
+          if (err) console.error('Session destroy error:', err);
+        });
         req.user = null;
         res.locals.currentUser = null;
       }
@@ -24,4 +28,3 @@ const detectUser = async (req, res, next) => {
 };
 
 module.exports = detectUser;
-

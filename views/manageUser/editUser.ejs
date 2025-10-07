@@ -39,8 +39,28 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Student ID</label>
-                <input type="text" name="studentId" class="form-control" value="<%= user.studentId || '' %>">
+                <label class="form-label">University ID</label>
+                <input type="text" name="universityId" class="form-control" value="<%= user.universityId %>" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="dateOfBirth" class="form-control" value="<%= user.dateOfBirth ? user.dateOfBirth.toISOString().split('T')[0] : '' %>">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Year of Study</label>
+                <input type="number" name="yearOfStudy" class="form-control" min="1" max="10" value="<%= user.yearOfStudy || '' %>">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Major</label>
+                <input type="text" name="major" class="form-control" value="<%= user.major || '' %>">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-control" rows="2"><%= user.address || '' %></textarea>
               </div>
 
               <div class="mb-3">
@@ -55,11 +75,6 @@
               <div class="mb-3">
                 <label class="form-label">Password (เว้นว่างถ้าไม่เปลี่ยน)</label>
                 <input type="password" name="password" class="form-control" placeholder="New password">
-              </div>
-
-              <div class="mb-3 form-check">
-                <input type="checkbox" name="isActive" class="form-check-input" id="isActive" <%= user.isActive ? 'checked' : '' %>>
-                <label class="form-check-label" for="isActive">Active</label>
               </div>
 
               <button type="submit" class="btn btn-primary">Update User</button>

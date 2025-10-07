@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - FormEase</title>
+    <title>Reports - FormEase</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -22,53 +23,90 @@
         body {
             box-sizing: border-box;
         }
-        .stat-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
         }
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-        .admin-card {
+        .stats-card {
             background: white;
             border-radius: 0.75rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
             transition: all 0.2s;
         }
-        .admin-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        .stats-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
         }
-        .notification-item {
+        .filter-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .export-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             transition: all 0.2s;
-            cursor: pointer;
         }
-        .notification-item:hover {
-            background-color: #f9fafb;
+        .export-button:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        .quick-action-btn {
-            transition: all 0.2s;
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
         }
-        .quick-action-btn:hover {
-            transform: translateY(-2px);
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
         }
-        .chart-container {
-            height: 300px;
+        .legend-color {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
         }
-        .progress-bar {
-            transition: width 0.5s ease-in-out;
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
-        .status-pending { background-color: #f59e0b; }
-        .status-approved { background-color: #10b981; }
-        .status-rejected { background-color: #ef4444; }
-        .status-draft { background-color: #6b7280; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -81,23 +119,18 @@
                         <span class="text-kku-blue font-bold text-lg">F</span>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold">FormEase Admin</h1>
+                        <h1 class="text-xl font-bold">FormEase</h1>
                         <p class="text-blue-200 text-sm">Faculty of Computer Science</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="hidden md:block text-right">
-                        <p class="text-sm font-medium">Admin User</p>
-                        <p class="text-blue-200 text-xs">System Administrator</p>
+                        <p class="text-sm font-medium">Dr. Jane Smith</p>
+                        <p class="text-blue-200 text-xs">Lecturer</p>
                     </div>
-                    <div class="relative">
-                        <button onclick="toggleNotifications()" class="relative p-2 bg-kku-blue-light hover:bg-kku-blue-dark rounded-full transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h10a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">5</span>
-                        </button>
-                    </div>
+                    <button onclick="goToDashboard()" class="bg-kku-blue-light hover:bg-kku-blue-dark px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Dashboard
+                    </button>
                     <button onclick="logout()" class="bg-kku-blue-light hover:bg-kku-blue-dark px-3 py-2 rounded-md text-sm font-medium transition-colors">
                         Logout
                     </button>
@@ -110,23 +143,20 @@
     <nav class="bg-white shadow-sm border-b">
         <div class="container mx-auto px-4">
             <div class="flex space-x-8 overflow-x-auto">
-                <a href="#" class="py-3 px-1 border-b-2 border-kku-blue text-kku-blue font-medium whitespace-nowrap">
+                <a href="#" onclick="goToDashboard()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
                     Dashboard
                 </a>
-                <a href="#" onclick="goToManageUsers()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    Manage Users
+                <a href="#" onclick="goToMyForms()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
+                    My Forms
                 </a>
-                <a href="#" onclick="goToManageCourses()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    Courses & Sections
+                <a href="#" onclick="goToHistory()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
+                    Form History
                 </a>
-                <a href="#" onclick="goToManageTemplates()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    Form Templates
+                <a href="#" class="py-3 px-1 border-b-2 border-kku-blue text-kku-blue font-medium whitespace-nowrap">
+                    Reports
                 </a>
-                <a href="#" onclick="goToViewAllForms()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    All Forms
-                </a>
-                <a href="#" onclick="goToSystemSettings()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    Settings
+                <a href="#" onclick="goToProfile()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
+                    Profile
                 </a>
             </div>
         </div>
@@ -136,758 +166,860 @@
     <main class="container mx-auto px-4 py-6">
         <!-- Page Header -->
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Admin Dashboard</h2>
-            <p class="text-gray-600">Monitor and manage the FormEase system.</p>
-        </div>
-
-        <!-- System Status Alert -->
-        <div id="systemStatusAlert" class="mb-6 bg-green-100 border border-green-200 text-green-800 px-4 py-3 rounded-md">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span class="font-medium">System Status: All services operational</span>
-                <span class="ml-auto text-sm">Last updated: <span id="lastUpdated">2 minutes ago</span></span>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Reports & Analytics</h2>
+                    <p class="text-gray-600">Comprehensive insights into form submissions and student activity.</p>
+                </div>
+                <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                    <button onclick="exportReport('csv')" class="export-button text-white px-4 py-2 rounded-md font-medium text-sm flex items-center justify-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export CSV
+                    </button>
+                    <button onclick="exportReport('pdf')" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors font-medium text-sm flex items-center justify-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Export PDF
+                    </button>
+                    <button onclick="refreshReports()" class="bg-kku-blue text-white px-4 py-2 rounded-md hover:bg-kku-blue-dark transition-colors font-medium text-sm flex items-center justify-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Statistics Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Total Forms -->
-            <div class="stat-card admin-card p-6" onclick="viewAllForms()">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Total Forms</p>
-                        <p class="text-3xl font-bold text-gray-900" id="totalFormsCount">1,247</p>
-                        <p class="text-sm text-green-600 mt-1">
-                            <span class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                </svg>
-                                +12% from last month
-                            </span>
-                        </p>
-                    </div>
-                    <div class="bg-blue-100 p-3 rounded-full">
-                        <svg class="w-8 h-8 text-kku-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Filters -->
+        <div class="filter-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Report Filters</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Date Range -->
+                <div>
+                    <label for="dateFrom" class="block text-sm font-medium text-gray-700 mb-2">
+                        From Date
+                    </label>
+                    <input type="date" id="dateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
+                </div>
+
+                <div>
+                    <label for="dateTo" class="block text-sm font-medium text-gray-700 mb-2">
+                        To Date
+                    </label>
+                    <input type="date" id="dateTo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
+                </div>
+
+                <!-- Student Group -->
+                <div>
+                    <label for="studentGroup" class="block text-sm font-medium text-gray-700 mb-2">
+                        Student Group
+                    </label>
+                    <select id="studentGroup" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
+                        <option value="">All Groups</option>
+                        <option value="cs-year1">CS Year 1</option>
+                        <option value="cs-year2">CS Year 2</option>
+                        <option value="cs-year3">CS Year 3</option>
+                        <option value="cs-year4">CS Year 4</option>
+                        <option value="graduate">Graduate Students</option>
+                    </select>
+                </div>
+
+                <!-- Apply Filters Button -->
+                <div class="flex items-end">
+                    <button onclick="applyFilters()" class="w-full bg-kku-blue text-white px-4 py-2 rounded-md hover:bg-kku-blue-dark transition-colors font-medium">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden text-center py-12">
+            <div class="loading-spinner w-12 h-12 border-4 border-kku-blue border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p class="text-gray-600 text-lg">Loading report data...</p>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div id="statsContainer" class="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 mr-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                     </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900" id="totalSubmissions">156</p>
+                        <p class="text-sm text-gray-600">Total Submissions</p>
+                        <p class="text-xs text-green-600 font-medium">+12% from last month</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Pending Forms -->
-            <div class="stat-card admin-card p-6" onclick="viewPendingForms()">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Pending Review</p>
-                        <p class="text-3xl font-bold text-yellow-600" id="pendingFormsCount">89</p>
-                        <p class="text-sm text-yellow-600 mt-1">
-                            <span class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Requires attention
-                            </span>
-                        </p>
-                    </div>
-                    <div class="bg-yellow-100 p-3 rounded-full">
-                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="stats-card">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 mr-4">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900" id="pendingReview">23</p>
+                        <p class="text-sm text-gray-600">Pending Review</p>
+                        <p class="text-xs text-yellow-600 font-medium">Requires attention</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Approved Forms -->
-            <div class="stat-card admin-card p-6" onclick="viewApprovedForms()">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Approved</p>
-                        <p class="text-3xl font-bold text-green-600" id="approvedFormsCount">1,098</p>
-                        <p class="text-sm text-green-600 mt-1">
-                            <span class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                88% approval rate
-                            </span>
-                        </p>
-                    </div>
-                    <div class="bg-green-100 p-3 rounded-full">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="stats-card">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 mr-4">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900" id="approvalRate">87%</p>
+                        <p class="text-sm text-gray-600">Approval Rate</p>
+                        <p class="text-xs text-green-600 font-medium">+3% improvement</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Rejected Forms -->
-            <div class="stat-card admin-card p-6" onclick="viewRejectedForms()">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Rejected</p>
-                        <p class="text-3xl font-bold text-red-600" id="rejectedFormsCount">60</p>
-                        <p class="text-sm text-red-600 mt-1">
-                            <span class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                5% rejection rate
-                            </span>
-                        </p>
-                    </div>
-                    <div class="bg-red-100 p-3 rounded-full">
-                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <div class="stats-card">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 mr-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-900" id="activeStudents">89</p>
+                        <p class="text-sm text-gray-600">Active Students</p>
+                        <p class="text-xs text-purple-600 font-medium">This month</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Main Content Area -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Recent Activity -->
-                <div class="admin-card">
-                    <div class="p-6 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                            <button onclick="refreshActivity()" class="text-kku-blue hover:text-kku-blue-dark text-sm font-medium">
-                                Refresh
-                            </button>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div id="recentActivityContainer" class="space-y-4">
-                            <!-- Activity items will be populated here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Form Status Distribution -->
-                <div class="admin-card">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Form Status Distribution</h3>
-                        <p class="text-sm text-gray-600 mt-1">Overview of form statuses across all departments</p>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <span class="status-indicator status-approved"></span>
-                                    <span class="text-sm font-medium text-gray-700">Approved</span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-500 h-2 rounded-full progress-bar" style="width: 88%"></div>
-                                    </div>
-                                    <span class="text-sm text-gray-600 w-12">88%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <span class="status-indicator status-pending"></span>
-                                    <span class="text-sm font-medium text-gray-700">Pending</span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                                        <div class="bg-yellow-500 h-2 rounded-full progress-bar" style="width: 7%"></div>
-                                    </div>
-                                    <span class="text-sm text-gray-600 w-12">7%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <span class="status-indicator status-rejected"></span>
-                                    <span class="text-sm font-medium text-gray-700">Rejected</span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-32 bg-gray-200 rounded-full h-2">
-                                        <div class="bg-red-500 h-2 rounded-full progress-bar" style="width: 5%"></div>
-                                    </div>
-                                    <span class="text-sm text-gray-600 w-12">5%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="admin-card">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
-                    </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <button onclick="goToManageUsers()" class="quick-action-btn bg-kku-blue text-white p-4 rounded-lg hover:bg-kku-blue-dark transition-colors text-left">
-                                <div class="flex items-center space-x-3">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="font-medium">Manage Users</p>
-                                        <p class="text-sm text-blue-200">Add, edit, or remove users</p>
-                                    </div>
-                                </div>
-                            </button>
-                            
-                            <button onclick="goToManageCourses()" class="quick-action-btn bg-green-600 text-white p-4 rounded-lg hover:bg-green-700 transition-colors text-left">
-                                <div class="flex items-center space-x-3">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="font-medium">Manage Courses</p>
-                                        <p class="text-sm text-green-200">Configure courses & sections</p>
-                                    </div>
-                                </div>
-                            </button>
-                            
-                            <button onclick="goToManageTemplates()" class="quick-action-btn bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700 transition-colors text-left">
-                                <div class="flex items-center space-x-3">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="font-medium">Form Templates</p>
-                                        <p class="text-sm text-purple-200">Create & manage templates</p>
-                                    </div>
-                                </div>
-                            </button>
-                            
-                            <button onclick="generateReport()" class="quick-action-btn bg-orange-600 text-white p-4 rounded-lg hover:bg-orange-700 transition-colors text-left">
-                                <div class="flex items-center space-x-3">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="font-medium">Generate Report</p>
-                                        <p class="text-sm text-orange-200">System usage analytics</p>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Notifications Panel -->
-                <div class="admin-card">
-                    <div class="p-6 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
-                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full" id="notificationCount">5</span>
-                        </div>
-                    </div>
-                    <div class="max-h-96 overflow-y-auto">
-                        <div id="notificationsContainer" class="divide-y divide-gray-200">
-                            <!-- Notifications will be populated here -->
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-gray-200">
-                        <button onclick="viewAllNotifications()" class="w-full text-center text-kku-blue hover:text-kku-blue-dark text-sm font-medium">
-                            View All Notifications
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Submissions by Type Chart -->
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Submissions by Type</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="changeChartType('submissionsByType', 'doughnut')" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            Pie
+                        </button>
+                        <button onclick="changeChartType('submissionsByType', 'bar')" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            Bar
                         </button>
                     </div>
                 </div>
+                <div class="chart-container">
+                    <canvas id="submissionsByTypeChart"></canvas>
+                </div>
+            </div>
 
-                <!-- System Health -->
-                <div class="admin-card">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">System Health</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Database</span>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                <span class="text-sm font-medium text-green-600">Healthy</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">API Services</span>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                <span class="text-sm font-medium text-green-600">Online</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Email Service</span>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                                <span class="text-sm font-medium text-yellow-600">Slow</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Storage</span>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                                <span class="text-sm font-medium text-green-600">78% Used</span>
-                            </div>
-                        </div>
+            <!-- Submissions by Status Chart -->
+            <div class="stats-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Submissions by Status</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="changeChartType('submissionsByStatus', 'doughnut')" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            Pie
+                        </button>
+                        <button onclick="changeChartType('submissionsByStatus', 'bar')" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            Bar
+                        </button>
                     </div>
                 </div>
-
-                <!-- Recent Users -->
-                <div class="admin-card">
-                    <div class="p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Recent Users</h3>
-                    </div>
-                    <div class="p-6">
-                        <div id="recentUsersContainer" class="space-y-3">
-                            <!-- Recent users will be populated here -->
-                        </div>
-                    </div>
+                <div class="chart-container">
+                    <canvas id="submissionsByStatusChart"></canvas>
                 </div>
+            </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="stats-card mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Submission Trends</h3>
+                <div class="flex space-x-2">
+                    <button onclick="changeTrendPeriod('week')" id="weekBtn" class="text-sm px-3 py-1 bg-kku-blue text-white rounded-md transition-colors">
+                        Week
+                    </button>
+                    <button onclick="changeTrendPeriod('month')" id="monthBtn" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                        Month
+                    </button>
+                    <button onclick="changeTrendPeriod('quarter')" id="quarterBtn" class="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                        Quarter
+                    </button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Student Group Performance -->
+        <div class="stats-card mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance by Student Group</h3>
+            <div class="chart-container">
+                <canvas id="groupPerformanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Statistics Table -->
+        <div class="stats-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Detailed Statistics</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Form Type
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Total Submissions
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Approved
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Pending
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Rejected
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Approval Rate
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Table rows will be populated here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
 
-    <!-- Loading Modal -->
-    <div id="loadingModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-                    <svg class="animate-spin h-6 w-6 text-kku-blue" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4" id="loadingTitle">Loading</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500" id="loadingMessage">Please wait...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-gray-100 text-gray-600 py-4 text-center text-sm mt-8">
-        <p>&copy; 2024 Faculty of Computer Science, Khon Kaen University. All rights reserved.</p>
-    </footer>
-
     <script>
-        // Sample data - replace with API calls
-        let systemStats = {
-            totalForms: 1247,
-            pendingForms: 89,
-            approvedForms: 1098,
-            rejectedForms: 60
+        // Global variables for charts
+        let submissionsByTypeChart = null;
+        let submissionsByStatusChart = null;
+        let trendChart = null;
+        let groupPerformanceChart = null;
+        let currentTrendPeriod = 'week';
+
+        // Sample report data - replace with API calls
+        let reportData = {
+            summary: {
+                totalSubmissions: 156,
+                pendingReview: 23,
+                approvalRate: 87,
+                activeStudents: 89
+            },
+            submissionsByType: {
+                'Leave Request': 45,
+                'Course Evaluation': 38,
+                'Registration': 32,
+                'Research Proposal': 25,
+                'IT Support': 16
+            },
+            submissionsByStatus: {
+                'Approved': 98,
+                'Pending': 23,
+                'Under Review': 20,
+                'Rejected': 15
+            },
+            trendData: {
+                week: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    data: [12, 19, 15, 25, 22, 8, 5]
+                },
+                month: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    data: [45, 52, 38, 21]
+                },
+                quarter: {
+                    labels: ['Jan', 'Feb', 'Mar'],
+                    data: [156, 142, 98]
+                }
+            },
+            groupPerformance: {
+                'CS Year 1': { total: 42, approved: 38, pending: 3, rejected: 1 },
+                'CS Year 2': { total: 38, approved: 32, pending: 4, rejected: 2 },
+                'CS Year 3': { total: 35, approved: 30, pending: 3, rejected: 2 },
+                'CS Year 4': { total: 28, approved: 25, pending: 2, rejected: 1 },
+                'Graduate': { total: 13, approved: 11, pending: 1, rejected: 1 }
+            }
         };
 
-        let notifications = [
-            {
-                id: 1,
-                type: 'urgent',
-                title: 'System Maintenance Scheduled',
-                message: 'Scheduled maintenance on Sunday 2:00 AM - 4:00 AM',
-                time: '5 minutes ago',
-                read: false
-            },
-            {
-                id: 2,
-                type: 'warning',
-                title: 'High Form Submission Volume',
-                message: '150+ forms submitted in the last hour',
-                time: '15 minutes ago',
-                read: false
-            },
-            {
-                id: 3,
-                type: 'info',
-                title: 'New User Registration',
-                message: 'Dr. Jane Smith has registered as a lecturer',
-                time: '1 hour ago',
-                read: false
-            },
-            {
-                id: 4,
-                type: 'success',
-                title: 'Backup Completed',
-                message: 'Daily system backup completed successfully',
-                time: '2 hours ago',
-                read: true
-            },
-            {
-                id: 5,
-                type: 'warning',
-                title: 'Storage Usage Alert',
-                message: 'Storage usage has reached 78% capacity',
-                time: '3 hours ago',
-                read: false
-            }
-        ];
-
-        let recentActivity = [
-            {
-                action: 'Form Approved',
-                user: 'Dr. Sarah Johnson',
-                details: 'Course Registration Form #FR-2024-001',
-                time: '2 minutes ago',
-                type: 'approval'
-            },
-            {
-                action: 'User Created',
-                user: 'Admin',
-                details: 'New lecturer account for Dr. Mike Wilson',
-                time: '15 minutes ago',
-                type: 'user'
-            },
-            {
-                action: 'Form Rejected',
-                user: 'Dr. Robert Chen',
-                details: 'Leave Application #LA-2024-045 - Missing documents',
-                time: '32 minutes ago',
-                type: 'rejection'
-            },
-            {
-                action: 'Template Updated',
-                user: 'Admin',
-                details: 'Course Evaluation template modified',
-                time: '1 hour ago',
-                type: 'template'
-            },
-            {
-                action: 'Bulk Approval',
-                user: 'Dr. Lisa Anderson',
-                details: '12 forms approved for CS Department',
-                time: '2 hours ago',
-                type: 'approval'
-            }
-        ];
-
-        let recentUsers = [
-            { name: 'Dr. Jane Smith', role: 'Lecturer', status: 'online', lastSeen: 'Active now' },
-            { name: 'John Doe', role: 'Student', status: 'offline', lastSeen: '5 min ago' },
-            { name: 'Dr. Mike Wilson', role: 'Lecturer', status: 'online', lastSeen: 'Active now' },
-            { name: 'Sarah Johnson', role: 'Admin', status: 'online', lastSeen: 'Active now' },
-            { name: 'Alex Chen', role: 'Student', status: 'offline', lastSeen: '1 hour ago' }
-        ];
-
-        // Initialize the dashboard
+        // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
-            loadDashboardData();
-            renderNotifications();
-            renderRecentActivity();
-            renderRecentUsers();
-            updateLastUpdatedTime();
-            
-            // Auto-refresh data every 30 seconds
-            setInterval(refreshDashboardData, 30000);
+            setupFilters();
+            loadReportData();
         });
 
-        // Load dashboard data
-        async function loadDashboardData() {
+        // Setup filter event listeners
+        function setupFilters() {
+            // Set default date range (last 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+            document.getElementById('dateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
+        }
+
+        // Load and render report data
+        async function loadReportData() {
             try {
-                showLoadingModal('Loading Dashboard', 'Fetching latest system data...');
+                showLoadingState(true);
                 
-                // Simulate API calls
-                await Promise.all([
-                    fetchSystemStatsAPI(),
-                    fetchNotificationsAPI(),
-                    fetchRecentActivityAPI()
-                ]);
+                // Simulate API call
+                await fetchReportingDataAPI();
                 
-                updateStatistics();
-                hideLoadingModal();
+                updateSummaryStats();
+                renderCharts();
+                renderStatsTable();
+                
+                showLoadingState(false);
             } catch (error) {
-                hideLoadingModal();
-                console.error('Error loading dashboard data:', error);
-                showSystemAlert('Error loading dashboard data. Please refresh the page.', 'error');
+                showMessage('Error loading report data: ' + error.message, 'error');
+                showLoadingState(false);
             }
         }
 
-        // Update statistics display
-        function updateStatistics() {
-            document.getElementById('totalFormsCount').textContent = systemStats.totalForms.toLocaleString();
-            document.getElementById('pendingFormsCount').textContent = systemStats.pendingForms.toLocaleString();
-            document.getElementById('approvedFormsCount').textContent = systemStats.approvedForms.toLocaleString();
-            document.getElementById('rejectedFormsCount').textContent = systemStats.rejectedForms.toLocaleString();
+        // Update summary statistics
+        function updateSummaryStats() {
+            document.getElementById('totalSubmissions').textContent = reportData.summary.totalSubmissions;
+            document.getElementById('pendingReview').textContent = reportData.summary.pendingReview;
+            document.getElementById('approvalRate').textContent = reportData.summary.approvalRate + '%';
+            document.getElementById('activeStudents').textContent = reportData.summary.activeStudents;
         }
 
-        // Render notifications
-        function renderNotifications() {
-            const container = document.getElementById('notificationsContainer');
-            const unreadCount = notifications.filter(n => !n.read).length;
+        // Render all charts
+        function renderCharts() {
+            renderSubmissionsByTypeChart();
+            renderSubmissionsByStatusChart();
+            renderTrendChart();
+            renderGroupPerformanceChart();
+        }
+
+        // Render submissions by type chart
+        function renderSubmissionsByTypeChart() {
+            const ctx = document.getElementById('submissionsByTypeChart').getContext('2d');
             
-            document.getElementById('notificationCount').textContent = unreadCount;
+            if (submissionsByTypeChart) {
+                submissionsByTypeChart.destroy();
+            }
+
+            const data = reportData.submissionsByType;
             
-            container.innerHTML = notifications.map(notification => `
-                <div class="notification-item p-4 ${notification.read ? 'opacity-60' : ''}" onclick="markAsRead(${notification.id})">
-                    <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0">
-                            ${getNotificationIcon(notification.type)}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-900">${notification.title}</p>
-                            <p class="text-sm text-gray-600 mt-1">${notification.message}</p>
-                            <p class="text-xs text-gray-500 mt-1">${notification.time}</p>
-                        </div>
-                        ${!notification.read ? '<div class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></div>' : ''}
-                    </div>
-                </div>
-            `).join('');
+            submissionsByTypeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#3b82f6', // Blue
+                            '#10b981', // Green
+                            '#f59e0b', // Yellow
+                            '#8b5cf6', // Purple
+                            '#ef4444'  // Red
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
-        // Get notification icon based on type
-        function getNotificationIcon(type) {
-            const icons = {
-                urgent: '<div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg></div>',
-                warning: '<div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg></div>',
-                info: '<div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>',
-                success: '<div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>'
-            };
-            return icons[type] || icons.info;
-        }
-
-        // Render recent activity
-        function renderRecentActivity() {
-            const container = document.getElementById('recentActivityContainer');
+        // Render submissions by status chart
+        function renderSubmissionsByStatusChart() {
+            const ctx = document.getElementById('submissionsByStatusChart').getContext('2d');
             
-            container.innerHTML = recentActivity.map(activity => `
-                <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div class="flex-shrink-0">
-                        ${getActivityIcon(activity.type)}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900">${activity.action}</p>
-                        <p class="text-sm text-gray-600">by ${activity.user}</p>
-                        <p class="text-sm text-gray-500 mt-1">${activity.details}</p>
-                        <p class="text-xs text-gray-400 mt-1">${activity.time}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
+            if (submissionsByStatusChart) {
+                submissionsByStatusChart.destroy();
+            }
 
-        // Get activity icon based on type
-        function getActivityIcon(type) {
-            const icons = {
-                approval: '<div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>',
-                rejection: '<div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>',
-                user: '<div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div>',
-                template: '<div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>'
-            };
-            return icons[type] || icons.user;
-        }
-
-        // Render recent users
-        function renderRecentUsers() {
-            const container = document.getElementById('recentUsersContainer');
+            const data = reportData.submissionsByStatus;
             
-            container.innerHTML = recentUsers.map(user => `
-                <div class="flex items-center space-x-3">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                            <span class="text-xs font-medium text-gray-700">${user.name.split(' ').map(n => n[0]).join('')}</span>
-                        </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900">${user.name}</p>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs text-gray-500">${user.role}</span>
-                            <div class="w-2 h-2 ${user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'} rounded-full"></div>
-                        </div>
-                    </div>
-                    <div class="text-xs text-gray-400">
-                        ${user.lastSeen}
-                    </div>
-                </div>
-            `).join('');
+            submissionsByStatusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#10b981', // Green for Approved
+                            '#f59e0b', // Yellow for Pending
+                            '#3b82f6', // Blue for Under Review
+                            '#ef4444'  // Red for Rejected
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
-        // Mark notification as read
-        function markAsRead(notificationId) {
-            const notification = notifications.find(n => n.id === notificationId);
-            if (notification) {
-                notification.read = true;
-                renderNotifications();
+        // Render trend chart
+        function renderTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChart) {
+                trendChart.destroy();
+            }
+
+            const data = reportData.trendData[currentTrendPeriod];
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Submissions',
+                        data: data.data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // Render group performance chart
+        function renderGroupPerformanceChart() {
+            const ctx = document.getElementById('groupPerformanceChart').getContext('2d');
+            
+            if (groupPerformanceChart) {
+                groupPerformanceChart.destroy();
+            }
+
+            const groups = Object.keys(reportData.groupPerformance);
+            const approvedData = groups.map(group => reportData.groupPerformance[group].approved);
+            const pendingData = groups.map(group => reportData.groupPerformance[group].pending);
+            const rejectedData = groups.map(group => reportData.groupPerformance[group].rejected);
+            
+            groupPerformanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: groups,
+                    datasets: [
+                        {
+                            label: 'Approved',
+                            data: approvedData,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Pending',
+                            data: pendingData,
+                            backgroundColor: '#f59e0b',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Rejected',
+                            data: rejectedData,
+                            backgroundColor: '#ef4444',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render statistics table
+        function renderStatsTable() {
+            const tbody = document.getElementById('statsTableBody');
+            const typeData = reportData.submissionsByType;
+            
+            tbody.innerHTML = Object.keys(typeData).map(type => {
+                const total = typeData[type];
+                const approved = Math.floor(total * 0.75); // Simulate approved count
+                const pending = Math.floor(total * 0.15);  // Simulate pending count
+                const rejected = total - approved - pending;
+                const approvalRate = ((approved / total) * 100).toFixed(1);
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${type}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${total}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
+                            ${approved}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600 font-medium">
+                            ${pending}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                            ${rejected}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                            ${approvalRate}%
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Change chart type
+        function changeChartType(chartName, newType) {
+            if (chartName === 'submissionsByType') {
+                const ctx = document.getElementById('submissionsByTypeChart').getContext('2d');
+                submissionsByTypeChart.destroy();
+                
+                const data = reportData.submissionsByType;
+                submissionsByTypeChart = new Chart(ctx, {
+                    type: newType,
+                    data: {
+                        labels: Object.keys(data),
+                        datasets: [{
+                            data: Object.values(data),
+                            backgroundColor: [
+                                '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: newType === 'bar' ? 'top' : 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        },
+                        scales: newType === 'bar' ? {
+                            y: {
+                                beginAtZero: true
+                            }
+                        } : {}
+                    }
+                });
+            } else if (chartName === 'submissionsByStatus') {
+                const ctx = document.getElementById('submissionsByStatusChart').getContext('2d');
+                submissionsByStatusChart.destroy();
+                
+                const data = reportData.submissionsByStatus;
+                submissionsByStatusChart = new Chart(ctx, {
+                    type: newType,
+                    data: {
+                        labels: Object.keys(data),
+                        datasets: [{
+                            data: Object.values(data),
+                            backgroundColor: [
+                                '#10b981', '#f59e0b', '#3b82f6', '#ef4444'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: newType === 'bar' ? 'top' : 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        },
+                        scales: newType === 'bar' ? {
+                            y: {
+                                beginAtZero: true
+                            }
+                        } : {}
+                    }
+                });
             }
         }
 
-        // Refresh dashboard data
-        async function refreshDashboardData() {
+        // Change trend period
+        function changeTrendPeriod(period) {
+            currentTrendPeriod = period;
+            
+            // Update button styles
+            document.querySelectorAll('#weekBtn, #monthBtn, #quarterBtn').forEach(btn => {
+                btn.className = 'text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors';
+            });
+            document.getElementById(period + 'Btn').className = 'text-sm px-3 py-1 bg-kku-blue text-white rounded-md transition-colors';
+            
+            renderTrendChart();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const studentGroup = document.getElementById('studentGroup').value;
+            
+            showMessage('Applying filters and updating reports...', 'info');
+            
+            // Simulate filtering and reload data
+            setTimeout(() => {
+                loadReportData();
+                showMessage('Reports updated successfully', 'success');
+            }, 1500);
+        }
+
+        // Export report
+        async function exportReport(format) {
             try {
-                await Promise.all([
-                    fetchSystemStatsAPI(),
-                    fetchNotificationsAPI(),
-                    fetchRecentActivityAPI()
-                ]);
+                showMessage(`Preparing ${format.toUpperCase()} export...`, 'info');
                 
-                updateStatistics();
-                renderNotifications();
-                renderRecentActivity();
-                updateLastUpdatedTime();
+                // Simulate export process
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                if (format === 'csv') {
+                    // Simulate CSV download
+                    const csvContent = generateCSVContent();
+                    downloadFile('form_reports.csv', csvContent, 'text/csv');
+                } else if (format === 'pdf') {
+                    // Simulate PDF generation
+                    showMessage('Generating PDF report...', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    showMessage('PDF report generated successfully', 'success');
+                }
+                
             } catch (error) {
-                console.error('Error refreshing dashboard data:', error);
+                showMessage('Error exporting report: ' + error.message, 'error');
             }
         }
 
-        // Update last updated time
-        function updateLastUpdatedTime() {
-            document.getElementById('lastUpdated').textContent = 'Just now';
-        }
-
-        // Show/hide loading modal
-        function showLoadingModal(title, message) {
-            document.getElementById('loadingTitle').textContent = title;
-            document.getElementById('loadingMessage').textContent = message;
-            document.getElementById('loadingModal').classList.remove('hidden');
-        }
-
-        function hideLoadingModal() {
-            document.getElementById('loadingModal').classList.add('hidden');
-        }
-
-        // Show system alert
-        function showSystemAlert(message, type) {
-            const alertElement = document.getElementById('systemStatusAlert');
-            const alertClass = type === 'error' ? 'bg-red-100 border-red-200 text-red-800' : 'bg-green-100 border-green-200 text-green-800';
+        // Generate CSV content
+        function generateCSVContent() {
+            let csv = 'Form Type,Total Submissions,Approved,Pending,Rejected,Approval Rate\n';
             
-            alertElement.className = `mb-6 ${alertClass} px-4 py-3 rounded-md`;
-            alertElement.querySelector('span').textContent = message;
+            Object.keys(reportData.submissionsByType).forEach(type => {
+                const total = reportData.submissionsByType[type];
+                const approved = Math.floor(total * 0.75);
+                const pending = Math.floor(total * 0.15);
+                const rejected = total - approved - pending;
+                const approvalRate = ((approved / total) * 100).toFixed(1);
+                
+                csv += `${type},${total},${approved},${pending},${rejected},${approvalRate}%\n`;
+            });
+            
+            return csv;
+        }
+
+        // Download file
+        function downloadFile(filename, content, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showMessage(`${filename} downloaded successfully`, 'success');
+        }
+
+        // Refresh reports
+        async function refreshReports() {
+            showMessage('Refreshing report data...', 'info');
+            await loadReportData();
+            showMessage('Reports refreshed successfully', 'success');
+        }
+
+        // Show loading state
+        function showLoadingState(show) {
+            const loadingState = document.getElementById('loadingState');
+            const statsContainer = document.getElementById('statsContainer');
+            
+            if (show) {
+                loadingState.classList.remove('hidden');
+                statsContainer.style.opacity = '0.5';
+            } else {
+                loadingState.classList.add('hidden');
+                statsContainer.style.opacity = '1';
+            }
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 p-4 rounded-md text-sm font-medium z-50 ${
+                type === 'success' ? 'bg-green-100 border border-green-200 text-green-800' :
+                type === 'error' ? 'bg-red-100 border border-red-200 text-red-800' :
+                'bg-blue-100 border border-blue-200 text-blue-800'
+            }`;
+            messageDiv.textContent = message;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                if (document.body.contains(messageDiv)) {
+                    document.body.removeChild(messageDiv);
+                }
+            }, 3000);
         }
 
         // API simulation functions
-        async function fetchSystemStatsAPI() {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+        async function fetchReportingDataAPI() {
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
             
-            // Simulate slight changes in stats
-            systemStats.totalForms += Math.floor(Math.random() * 3);
-            systemStats.pendingForms += Math.floor(Math.random() * 2) - 1;
-            
-            return systemStats;
-        }
-
-        async function fetchNotificationsAPI() {
-            await new Promise(resolve => setTimeout(resolve, 800));
-            return notifications;
-        }
-
-        async function fetchRecentActivityAPI() {
-            await new Promise(resolve => setTimeout(resolve, 600));
-            return recentActivity;
+            // In a real application, this would fetch data from the server
+            // and update the reportData object
+            return reportData;
         }
 
         // Navigation functions
-        function goToManageUsers() {
-            showLoadingModal('Loading Users', 'Navigating to user management...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('Navigating to Manage Users page...');
-                // window.location.href = '/admin/users';
-            }, 1500);
+        function goToDashboard() {
+            showMessage('Navigating to dashboard...', 'info');
+            setTimeout(() => alert('Going to Dashboard...'), 500);
         }
 
-        function goToManageCourses() {
-            showLoadingModal('Loading Courses', 'Navigating to course management...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('Navigating to Manage Courses & Sections page...');
-                // window.location.href = '/admin/courses';
-            }, 1500);
+        function goToMyForms() {
+            showMessage('Navigating to forms...', 'info');
+            setTimeout(() => alert('Going to My Forms...'), 500);
         }
 
-        function goToManageTemplates() {
-            showLoadingModal('Loading Templates', 'Navigating to template management...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('Navigating to Manage Form Templates page...');
-                // window.location.href = '/admin/templates';
-            }, 1500);
+        function goToHistory() {
+            showMessage('Navigating to history...', 'info');
+            setTimeout(() => alert('Going to Form History...'), 500);
         }
 
-        function goToViewAllForms() {
-            showLoadingModal('Loading Forms', 'Fetching all forms...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('Navigating to View All Forms page...');
-                // window.location.href = '/admin/forms';
-            }, 1500);
-        }
-
-        function goToSystemSettings() {
-            alert('Navigating to System Settings...');
-            // window.location.href = '/admin/settings';
-        }
-
-        // Quick action functions
-        function viewAllForms() {
-            goToViewAllForms();
-        }
-
-        function viewPendingForms() {
-            showLoadingModal('Loading Pending Forms', 'Fetching pending forms...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('Showing pending forms...');
-                // window.location.href = '/admin/forms?status=pending';
-            }, 1500);
-        }
-
-        function viewApprovedForms() {
-            showLoadingModal('Loading Approved Forms', 'Fetching approved forms...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('Showing approved forms...');
-                // window.location.href = '/admin/forms?status=approved';
-            }, 1500);
-        }
-
-        function viewRejectedForms() {
-            showLoadingModal('Loading Rejected Forms', 'Fetching rejected forms...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('Showing rejected forms...');
-                // window.location.href = '/admin/forms?status=rejected';
-            }, 1500);
-        }
-
-        function generateReport() {
-            showLoadingModal('Generating Report', 'Creating system usage report...');
-            setTimeout(() => {
-                hideLoadingModal();
-                alert('System report generated successfully! Download will begin shortly.');
-                // Trigger report download
-            }, 2000);
-        }
-
-        function refreshActivity() {
-            showLoadingModal('Refreshing Activity', 'Fetching latest activity...');
-            setTimeout(() => {
-                hideLoadingModal();
-                renderRecentActivity();
-                showSystemAlert('Activity refreshed successfully!', 'success');
-                setTimeout(() => {
-                    showSystemAlert('System Status: All services operational', 'success');
-                }, 3000);
-            }, 1000);
-        }
-
-        function viewAllNotifications() {
-            alert('Opening all notifications...');
-            // window.location.href = '/admin/notifications';
-        }
-
-        function toggleNotifications() {
-            alert('Notification panel toggled');
-            // Toggle notification dropdown
+        function goToProfile() {
+            showMessage('Navigating to profile...', 'info');
+            setTimeout(() => alert('Going to Profile...'), 500);
         }
 
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                showLoadingModal('Logging Out', 'Signing you out securely...');
-                setTimeout(() => {
-                    alert('Logged out successfully');
-                    // window.location.href = '/logout';
-                }, 1500);
+                showMessage('Logging out...', 'info');
+                setTimeout(() => alert('Logged out successfully'), 1000);
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9886032f820dd334',t:'MTc1OTQyNzExNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'988609c0d496d334',t:'MTc1OTQyNzM4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
 
 

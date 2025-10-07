@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const checkRole = require('../middleware/checkRole');
-const User = require('../models/user'); // ชี้ไปที่ไฟล์ model user ของคุณ
+
+const User = require('../models/User'); 
 
 // หน้า Form Insert
 router.get("/add", (req, res) => {
@@ -36,35 +36,18 @@ router.post("/add", async (req, res) => {
   }
 });
 
-// router.get("/profile/:id", async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id);
+router.get("/profile/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
 
-//     if (!user) {
-//       return res.status(404).send("User not found");
-//     }
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
 
-//     res.render("profile", { user , activeMenu: "profile"});
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send("เกิดข้อผิดพลาด");
-//   }
-// });
-
-router.get('/profile/:id', checkRole, async (req, res) => {
-  const user = req.user;
-
-  if (user.role === 'admin') {
-    // ถ้าเป็น admin → render หน้าสำหรับ admin
-   res.render("profile", { user , activeMenu: "profile"});
-  } 
-  else if (user.role === 'lecturer') {
-    // ถ้าเป็น lecturer → render หน้าสำหรับ lecturer
-    return res.render('users/lecturerProfile', { user });
-  } 
-  else {
-    // ถ้าเป็น user ปกติ → หน้า profile ปกติ
-    return res.render('users/profile', { user });
+    res.render("profile", { user , activeMenu: "profile"});
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("เกิดข้อผิดพลาด");
   }
 });
 

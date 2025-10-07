@@ -18,6 +18,9 @@ const manageCourseRouter = require('./routes/manageCourse');
 
 const Dashboard = require('./routes/adminDashboard');
 
+const lectureDashboard  = require('./routes/lecturer/lectureDashboard');
+
+
 var app = express();
 
 mongoose.connect("mongodb://localhost:27017/CPmail")
@@ -38,7 +41,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: "yoursecretkey",
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 60 * 1000 // 30 นาที (millisecond)
+  }
 }));
 app.use(detectUser);
 
@@ -50,6 +56,8 @@ app.use('/manageUser', manageUserRouter);
 app.use('/manageCourse', manageCourseRouter);
 
 app.use('/Dashboard', Dashboard);
+app.use('/lectureDashboard', lectureDashboard);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
