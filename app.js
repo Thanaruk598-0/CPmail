@@ -1,3 +1,4 @@
+require("dotenv").config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -6,6 +7,8 @@ var logger = require('morgan');
 const session = require("express-session");
 const detectUser = require("./middleware/detectUser");
 const mongoose = require("mongoose");
+var flash = require("connect-flash");
+
 
 var indexRouter = require('./routes/index');
 var usersRouters = require('./routes/users');
@@ -22,8 +25,12 @@ const lectureDashboard  = require('./routes/lecturer/lectureDashboard');
 const lecturerReportRoutes = require("./routes/lecturer/reports");
 const lecturerRouter = require('./routes/lecturer/formHistory');
 
+//fai
+const authRoutes = require("./routes/auth");
 
-
+//b
+const announcements = require('./routes/announcements');
+const reviewRouter = require('./routes/lecturer/review');
 
 var app = express();
 
@@ -38,9 +45,14 @@ app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(express.json());
+
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "Loaded ✅" : "Not found ❌");
+
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use(session({
   secret: "yoursecretkey",
@@ -51,6 +63,7 @@ app.use(session({
   }
 }));
 app.use(detectUser);
+app.use(flash());
 
 // Router ตาม path ที่เลือก
 app.use('/', indexRouter);            // หน้าแรก
@@ -63,6 +76,12 @@ app.use('/Dashboard', Dashboard);
 app.use('/lectureDashboard', lectureDashboard);
 app.use("/lecturer", lecturerReportRoutes);
 app.use("/history", lecturerRouter);
+
+
+app.use("/", authRoutes);
+
+app.use('/lecturer', announcements);
+app.use('/lecturers', reviewRouter);
 
 
 // catch 404 and forward to error handler

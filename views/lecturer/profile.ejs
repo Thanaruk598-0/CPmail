@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title><%= pageTitle %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f7f9fb; }
+    .card-soft { border: 1px solid #eef2f7; border-radius: 14px; box-shadow: 0 2px 8px rgba(16,24,40,.04); }
+    .muted { color: #6b7280; }
+    .avatar { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar', { currentUser: user, activeMenu: 'profile' }) %>
+
+  <div class="container py-4">
+    <h2 class="fw-bold mb-1">โปรไฟล์อาจารย์</h2>
+    <div class="text-muted mb-4">ข้อมูลส่วนตัวและการตั้งค่า</div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="card card-soft p-3 p-md-4">
+          <div class="d-flex align-items-center mb-3">
+            <img src="<%= user?.avatarUrl || 'https://via.placeholder.com/84' %>" class="avatar me-3" alt="avatar">
+            <div>
+              <div class="h5 mb-0"><%= user?.name || 'ผู้ใช้งาน' %></div>
+              <div class="muted"><%= user?.email || 'ไม่มีอีเมล' %></div>
+              <div class="muted"><%= user?.role || 'ไม่ระบุบทบาท' %></div>
+            </div>
+          </div>
+
+          <form method="POST" action="/lecturer/profile/update" enctype="multipart/form-data">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="name" value="<%= user?.name || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">รหัสประจำตัวมหาวิทยาลัย <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="universityId" value="<%= user?.universityId || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">อีเมล <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" name="email" value="<%= user?.email || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">เบอร์โทรศัพท์</label>
+                <input type="text" class="form-control" name="phone" value="<%= user?.phone || '' %>">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">วันเกิด</label>
+                <input type="date" class="form-control" name="dateOfBirth" value="<%= user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '' %>">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">สาขาวิชา <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="major" value="<%= user?.major || '' %>" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">ที่อยู่</label>
+                <textarea class="form-control" name="address" rows="3"><%= user?.address || '' %></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">อัปโหลดรูปโปรไฟล์</label>
+                <input type="file" class="form-control" name="avatar" accept="image/*">
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button type="submit" class="btn btn-primary">บันทึก</button>
+              <a href="/lecturer" class="btn btn-outline-secondary">ยกเลิก</a>
+            </div>
+          </form>
+          <div id="formMsg" class="alert mt-3 d-none" role="alert"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('formMsg');
+    msg.classList.add('d-none');
+    const formData = new FormData(form);
+    try {
+      const res = await fetch('/lecturer/profile/update', { method: 'POST', body: formData, credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'HTTP ' + res.status);
+      msg.classList.remove('d-none', 'alert-danger');
+      msg.classList.add('alert', 'alert-success');
+      msg.textContent = data.message || 'บันทึกโปรไฟล์เรียบร้อย';
+      document.querySelector('.h5.mb-0').textContent = formData.get('name') || 'ผู้ใช้งาน';
+      document.querySelector('.muted:nth-of-type(1)').textContent = formData.get('email') || 'ไม่มีอีเมล';
+      if (data.avatarUrl) document.querySelector('.avatar').src = data.avatarUrl;
+    } catch(err) {
+      msg.classList.remove('d-none', 'alert-success');
+      msg.classList.add('alert', 'alert-danger');
+      msg.textContent = 'ไม่สามารถบันทึกโปรไฟล์ได้: ' + err.message;
+    }
+  });
+});
+</script>
+</body>
+</html>

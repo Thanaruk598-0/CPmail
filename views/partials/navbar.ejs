@@ -69,6 +69,12 @@
         <li class="nav-item">
           <a class="nav-link <% if(activeMenu === 'formHistory'){ %>active<% } %>" href="/history/history">ประวัติฟอร์ม</a>
         </li>
+          <li class="nav-item">
+              <a class="nav-link <% if(activeMenu==='profile'){ %>active<% } %>" href="/users/profile/<%= currentUser._id %>">โปรไฟล์อาจารย์</a>
+            </li>
+              <li class="nav-item">
+          <a class="nav-link <%= activeMenu === 'announcements' ? 'active' : '' %>" href="/lecturer/announcements">ประกาศ</a>
+        </li>
       <% } %>
 
       <% if (currentUser && currentUser.role === 'student') { %>

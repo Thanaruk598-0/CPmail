@@ -1,4 +1,3 @@
-// routes/lecturer/formHistory.js (โค้ดใหม่ทั้งหมด – แก้ filter, clear, populate, และ route view)
 const express = require('express');
 const router = express.Router();
 const Form = require('../../models/Form');
@@ -42,7 +41,7 @@ router.get('/history', checkLecturer, async (req, res) => {
     const formTypeFilter = req.query.formType || 'All Types';
     const fromDate = req.query.fromDate || '';
     const toDate = req.query.toDate || '';
-    const searchStudent = req.query.searchStudent || '';
+    const searchStudent = req.query.searchStudent ? req.query.searchStudent.trim() : '';
 
     let matchQuery = { section: { $in: sectionIds } };
 
@@ -58,31 +57,31 @@ router.get('/history', checkLecturer, async (req, res) => {
     }
 
     // Date filter
-    if (fromDate) {
-      if (!matchQuery.createdAt) matchQuery.createdAt = {};
-      matchQuery.createdAt.$gte = new Date(fromDate);
-    }
-    if (toDate) {
-      if (!matchQuery.createdAt) matchQuery.createdAt = {};
-      matchQuery.createdAt.$lte = new Date(toDate);
+    if (fromDate) matchQuery.createdAt = { ...matchQuery.createdAt, $gte: new Date(fromDate) };
+    if (toDate) matchQuery.createdAt = { ...matchQuery.createdAt, $lte: new Date(toDate) };
+
+    // Student search filter
+    if (searchStudent) {
+      const students = await User.find({
+        name: { $regex: searchStudent, $options: 'i' }
+      }).select('_id');
+      if (students.length > 0) {
+        matchQuery.submitter = { $in: students.map(s => s._id) };
+      } else {
+        matchQuery.submitter = null; // ไม่มีนักศึกษาที่ตรง → คืนผลลัพธ์ว่าง
+      }
     }
 
     // Fetch forms with populate
-    const forms = await Form.find(matchQuery)
+    let forms = await Form.find(matchQuery)
       .sort({ createdAt: -1 })
       .limit(50) // Basic limit for pagination
       .populate('submitter', 'name universityId avatarUrl')
       .populate('template', 'title fields');
 
-    // Apply client-side filters if needed (for form type and student search)
-    let filteredForms = forms;
+    // Apply client-side filters if needed (for form type)
     if (formTypeFilter !== 'All Types') {
-      filteredForms = filteredForms.filter(form => form.template?.title === formTypeFilter);
-    }
-    if (searchStudent) {
-      filteredForms = filteredForms.filter(form => 
-        form.submitter?.name.toLowerCase().includes(searchStudent.toLowerCase())
-      );
+      forms = forms.filter(form => form.template?.title === formTypeFilter);
     }
 
     // Stats (overall, not filtered)
@@ -110,12 +109,12 @@ router.get('/history', checkLecturer, async (req, res) => {
     const formTypesList = ['All Types', ...uniqueFormTypes.map(t => t.title)];
 
     // Mock priority (add to model if needed)
-    filteredForms.forEach(form => {
+    forms.forEach(form => {
       form.priority = Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
     });
 
     res.render('lecturer/formHistory', {
-      forms: filteredForms,
+      forms,
       totalForms,
       pendingReview,
       approved,

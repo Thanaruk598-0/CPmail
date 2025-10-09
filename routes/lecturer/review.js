@@ -1,0 +1,327 @@
+// routes/review.js
+const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
+
+const Form = require('../../models/Form');
+const FormTemplate = require('../../models/FormTemplate'); 
+require('../../models/User');     
+require('../../models/Course');
+require('../../models/Section');
+
+/* ---------- helpers ---------- */
+const isObjId = (id) => typeof id === 'string' && mongoose.Types.ObjectId.isValid(id);
+const asThaiYear = (v) => (Number.isFinite(+v) ? `ชั้นปีที่ ${+v}` : (v || ''));
+const pickRequestText = (data = {}) =>
+  data?.requestText || data?.reason || data?.message || data?.description || '';
+
+/** แปลงเอกสาร Form จาก DB → โครงที่ review-form.ejs ใช้ */
+function toViewModel(doc) {
+  const stu = doc.submitter || {};
+  const c = doc.course || {};
+  const s = doc.section || {};
+  const tmpl = doc.template || {};  // มี title / category / Status อยู่ในนี้
+
+  const student = {
+    name: stu.name || '-',
+    email: stu.email || '-',
+    studentId: stu.universityId || '-',
+    program: stu.major || '-',
+    year: asThaiYear(stu.yearOfStudy),
+  };
+
+  const course = {
+    code: c.code || c.courseCode || '-',
+    name: c.name || c.courseName || '-',
+    section: s.name || s.title || s.sectionName || '-',
+    credits: c.credits ?? c.credit ?? '-',
+  };
+
+  const submittedAt = doc.submittedAt || doc.createdAt || new Date();
+  const reviewerName =
+    (Array.isArray(doc.reviewers) && doc.reviewers[0]?.name) || 'ผู้ตรวจ';
+
+  const timeline = [
+    { label: 'ส่งคำร้องแล้ว', by: student.name || 'นักศึกษา', time: submittedAt.toLocaleString('th-TH') },
+    { label: 'มอบหมายให้ตรวจ', by: reviewerName, time: (doc.assignedAt ? new Date(doc.assignedAt) : submittedAt).toLocaleString('th-TH') },
+    {
+      label:
+        doc.status === 'approved' ? 'อนุมัติแล้ว' :
+          doc.status === 'rejected' ? 'ไม่อนุมัติ' :
+            doc.status === 'cancelled' ? 'ยกเลิกแล้ว' : 'อยู่ระหว่างตรวจสอบ',
+      by: 'สถานะปัจจุบัน',
+      time: (doc.updatedAt ? new Date(doc.updatedAt) : new Date()).toLocaleString('th-TH'),
+      active: !['approved', 'rejected', 'cancelled'].includes(doc.status),
+    },
+  ];
+
+  // ส่งก้อน template ให้ .ejs ใช้งานได้สะดวก
+  const template = {
+    title: tmpl.title || '-',
+    description: translateDescription(tmpl.description) || '-',
+    category: translateCategory(tmpl.category) || '-',
+    status: tmpl.Status || '-', // DB ใช้ S ใหญ่ → map เป็น .status
+  };
+
+  return {
+    id: String(doc._id),
+    student,
+    course,
+    submittedAt,
+    formType: template.title,
+    template,
+    requestText: pickRequestText(doc.data) || doc.reason || '-',
+    timeline,
+    status:
+      (doc.status === 'pending' && 'รอตรวจ') ||
+      (doc.status === 'approved' && 'อนุมัติแล้ว') ||
+      (doc.status === 'rejected' && 'ไม่อนุมัติ') ||
+      (doc.status === 'cancelled' && 'ยกเลิกแล้ว') ||
+      'กำลังตรวจสอบ',
+  };
+}
+
+/* ---------- core query ---------- */
+async function fetchFormById(id) {
+  return Form.findById(id)
+    .populate('submitter', 'name email universityId major yearOfStudy')
+    .populate('template', 'title description category Status')
+    .populate('course', 'code name credits courseCode courseName credit')
+    .populate('section', 'name title sectionName')
+    .populate('reviewers', 'name title email')
+    .lean();
+}
+
+function translateCategory(category) {
+  if (!category) return '';
+
+  const map = {
+    'Administrative': 'งานธุรการ',
+    'Request': 'คำร้อง',
+    'Academic': 'วิชาการ',
+    'Leave': 'การลา',
+    'Other': 'อื่น ๆ'
+  };
+
+  return map[category] || category;
+}
+
+
+function translateDescription(desc) {
+  if (!desc) return '';
+  // ✅ ใส่ mapping ได้เลย ถ้ามีหลายแบบก็ขยายเพิ่ม
+  if (desc === 'Request to resign/withdraw from course or activity.') {
+    return 'คำร้องขอลาออก/ถอนรายวิชา หรือกิจกรรม';
+  }
+  return desc;
+}
+
+
+router.get('/forms/:id/review', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isObjId(id)) return res.status(400).send('รหัสคำร้องไม่ถูกต้อง');
+
+    const doc = await fetchFormById(id);
+    if (!doc) return res.status(404).send('ไม่พบคำร้องในระบบ');
+
+    return res.render('lecturer/review-form', { form: toViewModel(doc) });
+  } catch (err) { next(err); }
+});
+
+/* ========== B) /lecturer/review ==========
+   รองรับ 3 โหมด:
+   - /lecturer/review?id=<formId>          → แสดงฟอร์มตาม id
+   - /lecturer/review?category=...&tstatus=... → แสดง "ฟอร์มล่าสุด" ที่มาจากเทมเพลตตาม category+Status
+   - /lecturer/review                      → ถ้าไม่ส่งอะไรเลย แสดงฟอร์มล่าสุดทั้งหมด
+========================================= */
+router.get('/review', async (req, res, next) => {
+  try {
+    const { id, category, tstatus } = req.query;
+
+    // 1) ระบุ formId โดยตรง
+    if (id) {
+      if (!isObjId(id)) return res.status(400).send('รหัสคำร้องไม่ถูกต้อง');
+      const doc = await fetchFormById(id);
+      if (!doc) return res.status(404).send('ไม่พบคำร้องในระบบ');
+      return res.render('lecturer/review-form', { form: toViewModel(doc) });
+    }
+
+    // 2) มีตัวกรองเทมเพลต → หา template ids ก่อน แล้วค่อยหา form ล่าสุดที่ใช้ template เหล่านั้น
+    let formFilter = {};
+    if (category || tstatus) {
+      const tmplFilter = {};
+      if (category) tmplFilter.category = category;
+      if (tstatus) tmplFilter.Status = tstatus; // DB ใช้ S ใหญ่
+      const tmplIds = await FormTemplate.find(tmplFilter).select('_id').lean();
+      if (!tmplIds.length) {
+        return res.status(404).send(`ไม่พบเทมเพลตที่ตรงกับ category="${category || '-'}" และ Status="${tstatus || '-'}"`);
+      }
+      formFilter.template = { $in: tmplIds.map(t => t._id) };
+    }
+
+    // หาเอกสาร "ล่าสุด" ตาม filter (หรือทั้งหมดถ้าไม่กรอง)
+    const latest = await Form.findOne(formFilter).sort({ submittedAt: -1, createdAt: -1 }).lean();
+    if (!latest) return res.status(404).send('ยังไม่มีคำร้องในระบบ');
+
+    const doc = await fetchFormById(latest._id);
+    return res.render('lecturer/review-form', { form: toViewModel(doc) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ====== [APPEND] Review actions: approve / reject / save feedback ====== */
+
+// หยิบผู้รีวิวปัจจุบัน (จาก res.locals.currentUser ถ้าไม่มีให้ใส่ชื่อทั่วไป)
+function currentReviewer(req, res) {
+  const u = res.locals?.currentUser || req.user || {};
+  return {
+    _id: u._id || null,
+    name: u.name || u.fullName || u.username || 'ผู้ตรวจ',
+    email: u.email || null,
+  };
+}
+
+// utility: สร้าง payload feedback
+function buildFeedbackPayload(body, reviewer) {
+  const type = (body.feedbackType || body.type || 'general').toString();
+  const text = (body.comments || body.comment || body.note || '').toString().trim();
+  const notify = !!(body.notify === true || body.notify === 'true' || body.notify === 'on');
+  const followUp = !!(body.followUp === true || body.followUp === 'true' || body.followUp === 'on');
+
+  return {
+    type,
+    text,
+    notify,
+    followUp,
+    by: { id: reviewer._id, name: reviewer.name, email: reviewer.email || null },
+    at: new Date()
+  };
+}
+
+// เขียน feedback และอัปเดตสถานะ (ถ้าส่งมา)
+async function writeReviewAction({ formId, status, feedback }) {
+  const update = {
+    $set: {
+      updatedAt: new Date(),
+    },
+  };
+
+  // บันทึกความคิดเห็นล่าสุด
+  if (feedback?.text) {
+    update.$set.reviewComment = feedback.text;
+    update.$set.lastFeedback = { ...feedback }; // optional สำหรับแสดงใน list/summary
+  }
+
+  // เปลี่ยนสถานะถ้ามีการส่งเข้ามา
+  if (status === 'approved' || status === 'rejected') {
+    update.$set.status = status;
+    update.$set.reviewedAt = new Date();
+  }
+
+  // อัปเดตเอกสาร
+  const doc = await Form.findByIdAndUpdate(formId, update, { new: true });
+  if (!doc) throw new Error('ไม่พบคำร้องในระบบ'); // ป้องกัน HTTP 404
+  return doc;
+}
+
+
+
+/* ---- POST /lecturer/forms/:id/feedback (เฉพาะบันทึกความเห็น) ---- */
+router.post('/forms/:id/feedback', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isObjId(id)) return res.status(400).json({ success: false, message: 'รหัสคำร้องไม่ถูกต้อง' });
+
+    const base = await Form.findById(id).select('_id').lean();
+    if (!base) return res.status(404).json({ success: false, message: 'ไม่พบคำร้องในระบบ' });
+
+    const reviewer = currentReviewer(req, res);
+    const feedback = buildFeedbackPayload(req.body || {}, reviewer);
+    const saved = await writeReviewAction({ formId: id, status: null, feedback });
+
+    return res.json({ success: true, message: 'บันทึกความเห็นเรียบร้อย', formId: id, status: saved.status });
+  } catch (err) { next(err); }
+});
+
+
+/* ---- POST /lecturer/forms/:id/approve ---- */
+router.post('/forms/:id/approve', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isObjId(id)) return res.status(400).json({ success: false, message: 'รหัสคำร้องไม่ถูกต้อง' });
+
+    const base = await Form.findById(id).select('_id status').lean();
+    if (!base) return res.status(404).json({ success: false, message: 'ไม่พบคำร้องในระบบ' });
+
+    const reviewer = currentReviewer(req, res);
+    const feedback = buildFeedbackPayload(req.body || {}, reviewer);
+    const saved = await writeReviewAction({ formId: id, status: 'approved', feedback });
+
+    return res.json({ success: true, message: 'อนุมัติคำร้องเรียบร้อย', formId: id, status: saved.status });
+  } catch (err) { next(err); }
+});
+
+router.post('/forms/:id/reject', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!isObjId(id)) return res.status(400).json({ success: false, message: 'รหัสคำร้องไม่ถูกต้อง' });
+
+    const base = await Form.findById(id).select('_id status').lean();
+    if (!base) return res.status(404).json({ success: false, message: 'ไม่พบคำร้องในระบบ' });
+
+    const reviewer = currentReviewer(req, res);
+    const feedback = buildFeedbackPayload(req.body || {}, reviewer);
+    const saved = await writeReviewAction({ formId: id, status: 'rejected', feedback });
+
+    return res.json({ success: true, message: 'บันทึกสถานะไม่อนุมัติเรียบร้อย', formId: id, status: saved.status });
+  } catch (err) { next(err); }
+});
+
+
+/* ====== [APPEND] ดึงรายการเทมเพลตเฉพาะฟิลด์ (ภาษาไทย) ======
+   GET /lecturer/form-templates/summary
+   ตัวอย่างผลลัพธ์:
+   {
+     "success": true,
+     "count": 4,
+     "templates": [
+       { "หัวข้อ": "Leave Request - Sick", "คำอธิบาย": "...", "หมวดหมู่": "Request" },
+       ...
+     ]
+   }
+=============================================================== */
+router.get('/form-templates/summary', async (req, res, next) => {
+  try {
+    // รองรับตัวกรองเพิ่มเติมแบบ optional: ?category=...&status=active
+    const { category, status } = req.query;
+    const filter = {};
+    if (category) filter.category = category;
+    if (status) filter.Status = status; // สคีมาของคุณใช้ S ใหญ่ใน Status
+
+    // ดึงเฉพาะ 3 ฟิลด์จาก MongoDB
+    const rows = await FormTemplate
+      .find(filter)
+      .select('title description category')
+      .lean();
+
+    // map ชื่อกุญแจให้ออกเป็นภาษาไทยตามที่ต้องการ
+    const templates = rows.map(t => ({
+      'หัวข้อ': t.title || '-',
+      'คำอธิบาย': t.description || '-',
+      'หมวดหมู่': t.category || '-',
+    }));
+
+    return res.json({
+      success: true,
+      count: templates.length,
+      templates,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+module.exports = router;

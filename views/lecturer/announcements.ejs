@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="th">
+<head>
+ <meta charset="utf-8">
+ <title><%= pageTitle %> - FormEase</title>
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+ <style>
+   body { background: #f7f9fb; }
+   .card-soft { border: 1px solid #eef2f7; border-radius: 14px; box-shadow: 0 2px 8px rgba(16,24,40,.04); }
+   .sidebar-sticky { position: sticky; top: 84px; }
+   .muted { color: #6b7280; }
+   .pill { border-radius: 999px; padding: .35rem .7rem; font-size: .8rem; }
+ </style>
+</head>
+<body>
+ 
+  <%- include('../partials/navbar', { user: user, activeMenu: activeMenu }) %>
+
+
+
+ <div class="container py-4">
+   <h2 class="fw-bold mb-1">ประกาศ</h2>
+   <div class="text-muted mb-4">สร้างและจัดการประกาศสำหรับรายวิชาและนักศึกษาของคุณ</div>
+
+
+   <div class="row g-4">
+     <!-- LEFT -->
+     <div class="col-lg-8">
+       <div class="card card-soft overflow-hidden">
+         <div class="p-3 border-bottom"><h5 class="mb-0">สร้างประกาศใหม่</h5></div>
+         <form id="announceForm" class="p-3 p-md-4" autocomplete="off">
+           <div class="mb-3">
+             <label class="form-label">หัวข้อประกาศ <span class="text-danger">*</span></label>
+             <input type="text" class="form-control" id="title" maxlength="150" placeholder="พิมพ์หัวข้อประกาศ..." required>
+             <div class="form-text">สูงสุด 150 ตัวอักษร</div>
+           </div>
+
+
+           <div class="mb-3">
+             <label class="form-label">รายวิชา</label>
+             <select id="courseId" class="form-select">
+               <option value="">— เลือกรายวิชา —</option>
+               <% (data.courses || []).forEach(c => { %>
+                 <option value="<%= c._id %>"><%= (c.code || c.courseId || '') %> - <%= c.name %></option>
+               <% }) %>
+             </select>
+             <% if (data.error) { %>
+               <div class="form-text text-danger"><%= data.error %></div>
+             <% } %>
+           </div>
+
+
+           <div class="mb-3">
+             <label class="form-label">กลุ่มเรียน (ถ้ามี)</label>
+             <select id="sectionId" class="form-select" disabled>
+               <option value="">— เลือกกลุ่มเรียน —</option>
+             </select>
+             <div class="form-text">ถ้าเลือกหลายกลุ่ม ให้ใช้ส่วน “ผู้ชมตามกลุ่มเรียน” ด้านล่าง</div>
+           </div>
+
+
+           <div class="mb-3">
+             <!-- แก้จาก <div class=เลือกสำหรับส่งหา> </div> เป็น label ที่ถูกต้อง -->
+             <label class="form-label d-block">เลือกสำหรับส่งหา</label>
+             <div class="d-flex gap-3 flex-wrap">
+               <div class="form-check">
+                 <input class="form-check-input" type="checkbox" id="roleStudent" value="student">
+                 <label class="form-check-label" for="roleStudent">นักศึกษา</label>
+               </div>
+               <div class="form-check">
+                 <input class="form-check-input" type="checkbox" id="roleLecturer" value="lecturer">
+                 <label class="form-check-label" for="roleLecturer">อาจารย์</label>
+               </div>
+               <div class="form-check">
+                 <input class="form-check-input" type="checkbox" id="roleAdmin" value="admin">
+                 <label class="form-check-label" for="roleAdmin">ผู้ดูแล</label>
+               </div>
+             </div>
+           </div>
+
+
+           <div class="mb-3">
+             <label class="form-label">ลิงก์ที่เกี่ยวข้อง</label>
+             <input type="url" class="form-control" id="link" placeholder="https://...">
+           </div>
+
+
+           <div class="mb-3">
+             <div class="form-check">
+               <input class="form-check-input" type="checkbox" id="pinned">
+               <label class="form-check-label" for="pinned">ปักหมุดประกาศ</label>
+             </div>
+           </div>
+
+
+           <div class="mb-3">
+             <label class="form-label">วันหมดอายุ (ถ้ามี)</label>
+             <input type="datetime-local" class="form-control" id="expiresAt">
+           </div>
+
+
+           <div class="mb-3">
+             <label class="form-label">เนื้อหาประกาศ <span class="text-danger">*</span></label>
+             <textarea class="form-control" id="content" rows="6" placeholder="พิมพ์เนื้อหาประกาศ..." required></textarea>
+           </div>
+
+
+           <div class="d-flex gap-2 pt-2">
+             <button type="reset" class="btn btn-outline-secondary">ล้างค่า</button>
+             <button type="submit" class="btn btn-primary">บันทึกประกาศ</button>
+           </div>
+
+
+           <div id="formMsg" class="alert mt-3 d-none" role="alert"></div>
+         </form>
+       </div>
+     </div>
+
+
+     <!-- RIGHT -->
+     <div class="col-lg-4">
+       <div class="sidebar-sticky">
+         <div class="card card-soft p-3 mb-3">
+           <h6 class="fw-bold mb-3">สถิติประกาศ</h6>
+           <div class="d-flex justify-content-between mb-2"><span class="muted">ทั้งหมด</span><strong id="stTotal"><%= data.stats.totalAll %></strong></div>
+           <div class="d-flex justify-content-between mb-2"><span class="muted">สร้างในเดือนนี้</span><strong id="stMonth"><%= data.stats.thisMonth %></strong></div>
+           <div class="d-flex justify-content-between mb-2"><span class="muted">ปักหมุด</span><strong id="stPinned"><%= data.stats.pinnedCount %></strong></div>
+           <div class="d-flex justify-content-between"><span class="muted">ใกล้หมดอายุ (7 วัน)</span><strong id="stExpSoon"><%= data.stats.expiringSoon %></strong></div>
+         </div>
+
+
+         <div class="card card-soft p-3">
+           <h6 class="fw-bold mb-3">กิจกรรมล่าสุด</h6>
+           <div id="recentList" class="list-group list-group-flush">
+             <% if ((data.recent || []).length === 0) { %>
+               <div class="text-muted small">ยังไม่มีกิจกรรม</div>
+             <% } %>
+             <% (data.recent || []).forEach(r => { %>
+               <div class="list-group-item px-0 d-flex justify-content-between align-items-start">
+                 <div>
+                   <div class="fw-semibold"><%= r.title %></div>
+                   <div class="small muted"><%= new Date(r.createdAt).toLocaleString('th-TH') %></div>
+                 </div>
+               </div>
+             <% }) %>
+           </div>
+         </div>
+       </div>
+     </div>
+     <!-- /RIGHT -->
+   </div>
+ </div>
+
+
+ <!-- ===== Scripts ===== -->
+ <script>
+   const BASE_PREFIX = '/lecturer';
+   window.CURRENT_LECTURER_ID = "<%= (user && user._id) ? user._id : '' %>";
+
+
+   async function fetchJSON(url, opts = {}) {
+     const res = await fetch(url, { credentials: 'include', ...opts });
+     if (!res.ok) throw new Error('HTTP ' + res.status);
+     return res.json();
+   }
+
+
+   function showFormMessage(message, alertClass) {
+     const msg = document.getElementById('formMsg');
+     msg.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-warning');
+     msg.classList.add('alert', alertClass);
+     msg.textContent = message;
+   }
+
+
+   async function loadCourses() {
+     const q = window.CURRENT_LECTURER_ID ? `?lecturerId=${encodeURIComponent(window.CURRENT_LECTURER_ID)}` : '';
+     const courseSel = document.getElementById('courseId');
+     try {
+       const { success, items } = await fetchJSON(`${BASE_PREFIX}/api/courses${q}`);
+       if (!success) throw new Error('ไม่สามารถดึงรายวิชาได้');
+       const existingValues = new Set(Array.from(courseSel.options).map(o => o.value));
+       (items || []).forEach(c => {
+         if (!existingValues.has(c._id)) {
+           const opt = document.createElement('option');
+           opt.value = c._id;
+           const code = c.code ? c.code : (c.courseId || '');
+           opt.textContent = `${code ? code + ' — ' : ''}${c.name}`;
+           courseSel.appendChild(opt);
+         }
+       });
+       if (courseSel.options.length === 1) {
+         showFormMessage('ไม่พบรายวิชาที่คุณสอน', 'alert-danger');
+       }
+     } catch (err) {
+       showFormMessage('ไม่สามารถโหลดรายวิชาได้: ' + err.message, 'alert-danger');
+     }
+   }
+
+
+   async function loadSections(courseId) {
+     const sectionSel = document.getElementById('sectionId');
+     try {
+       const { success, items } = await fetchJSON(`${BASE_PREFIX}/api/courses/${courseId}/sections`);
+       if (!success) throw new Error('ไม่สามารถดึงกลุ่มเรียนได้');
+       sectionSel.disabled = false;
+       sectionSel.innerHTML = `<option value="">— เลือกกลุ่มเรียน —</option>`;
+       (items || []).forEach(s => {
+         const opt = document.createElement('option');
+         opt.value = s._id;
+         opt.textContent = s.name;
+         sectionSel.appendChild(opt);
+       });
+       if (items.length === 0) {
+         sectionSel.disabled = true;
+         showFormMessage('ไม่พบกลุ่มเรียนสำหรับรายวิชานี้', 'alert-warning');
+       }
+     } catch (err) {
+       sectionSel.disabled = true;
+       sectionSel.innerHTML = `<option value="">— เลือกกลุ่มเรียน —</option>`;
+       showFormMessage('ไม่สามารถโหลดกลุ่มเรียนได้: ' + err.message, 'alert-danger');
+     }
+   }
+
+
+   document.addEventListener('DOMContentLoaded', () => {
+     loadCourses().catch(console.error);
+
+
+     const courseIdInit = document.getElementById('courseId').value;
+     if (courseIdInit) loadSections(courseIdInit).catch(console.error);
+
+
+     document.getElementById('courseId').addEventListener('change', (e) => {
+       const courseId = e.target.value;
+       const sectionSel = document.getElementById('sectionId');
+       if (!courseId) {
+         sectionSel.disabled = true;
+         sectionSel.innerHTML = `<option value="">— เลือกกลุ่มเรียน —</option>`;
+         return;
+       }
+       loadSections(courseId).catch(console.error);
+     });
+
+
+     document.getElementById('announceForm').addEventListener('submit', async (e) => {
+       e.preventDefault();
+       const msg = document.getElementById('formMsg');
+       msg.classList.add('d-none');
+
+
+       const courseId = document.getElementById('courseId').value || '';
+       const sectionId = document.getElementById('sectionId').value || '';
+
+
+       if (sectionId && !courseId) {
+         showFormMessage('กรุณาเลือกรายวิชาก่อนเลือกกลุ่มเรียน', 'alert-danger');
+         return;
+       }
+
+
+       try {
+         const body = {
+           title: document.getElementById('title').value.trim(),
+           content: document.getElementById('content').value.trim(),
+           link: document.getElementById('link').value.trim(),
+           pinned: document.getElementById('pinned').checked,
+           expiresAt: document.getElementById('expiresAt').value || null,
+           courseId,
+           sectionId,
+           audienceRoles: Array.from(document.querySelectorAll('input[type=checkbox][id^=role]:checked')).map(x => x.value),
+           audienceSectionIds: []
+         };
+
+
+         const res = await fetchJSON(`${BASE_PREFIX}/announcements/api`, {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify(body)
+         });
+
+
+         msg.classList.remove('d-none', 'alert-danger');
+         msg.classList.add('alert', 'alert-success');
+         msg.textContent = res.message || 'บันทึกประกาศเรียบร้อย';
+         e.target.reset();
+         document.getElementById('sectionId').disabled = true;
+         document.getElementById('sectionId').innerHTML = `<option value="">— เลือกกลุ่มเรียน —</option>`;
+
+
+         const { success, stats, recent } = await fetchJSON(`${BASE_PREFIX}/announcements/api/stats`);
+         if (success) {
+           document.getElementById('stTotal').textContent = stats.totalAll;
+           document.getElementById('stMonth').textContent = stats.thisMonth;
+           document.getElementById('stPinned').textContent = stats.pinnedCount;
+           document.getElementById('stExpSoon').textContent = stats.expiringSoon;
+
+
+           const recentList = document.getElementById('recentList');
+           recentList.innerHTML = recent.length === 0
+             ? '<div class="text-muted small">ยังไม่มีกิจกรรม</div>'
+             : recent.map(r => `
+                 <div class="list-group-item px-0 d-flex justify-content-between align-items-start">
+                   <div>
+                     <div class="fw-semibold">${r.title}</div>
+                     <div class="small muted">${new Date(r.createdAt).toLocaleString('th-TH')}</div>
+                   </div>
+                 </div>
+               `).join('');
+         }
+       } catch (err) {
+         msg.classList.remove('d-none', 'alert-success');
+         msg.classList.add('alert', 'alert-danger');
+         msg.textContent = 'ไม่สามารถบันทึกประกาศได้: ' + err.message;
+       }
+     });
+   });
+ </script>
+</body>
+</html>

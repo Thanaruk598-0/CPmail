@@ -137,7 +137,6 @@
                     <th>ประเภทฟอร์ม</th>
                     <th>วันที่ส่ง</th>
                     <th>สถานะ</th>
-                    <th>ความเร่งด่วน</th>
                     <th class="actions-col">การดำเนินการ</th>
                   </tr>
                 </thead>
@@ -150,7 +149,6 @@
                             <img src="<%= form.submitter?.avatarUrl || 'https://via.placeholder.com/32' %>" alt="Avatar" class="table-avatar me-2">
                             <div>
                               <strong><%= form.submitter?.name || 'ไม่ทราบชื่อ' %></strong>
-                              
                               <small class="text-muted"><%= form.submitter?.universityId || 'N/A' %></small>
                             </div>
                           </div>
@@ -170,13 +168,8 @@
                           </span>
                         </td>
                         <td>
-                          <span class="priority-badge <%= form.priority === 'high' ? 'bg-danger' : form.priority === 'medium' ? 'bg-warning' : 'bg-success' %> text-white">
-                            <% if(form.priority === 'high'){ %> สูงสุด <% } else if(form.priority === 'medium'){ %> ปานกลาง <% } else { %> ปกติ <% } %>
-                          </span>
-                        </td>
-                        <td>
                           <div class="d-flex gap-1 flex-wrap">
-                            <a href="/lecturer/history/forms/<%= form._id %>/view" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
+                            <a href="/lecturer/forms/<%= form._id %>/view" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
                             <% if (form.status === 'pending') { %>
                               <form method="POST" action="/lecturer/history/<%= form._id %>/approve" style="display: inline; margin: 0;">
                                 <button type="submit" class="btn btn-sm btn-success">อนุมัติ</button>
@@ -191,7 +184,7 @@
                     <% }); %>
                   <% } else { %>
                     <tr>
-                      <td colspan="6" class="text-center text-muted py-4">ไม่พบข้อมูลฟอร์ม</td>
+                      <td colspan="5" class="text-center text-muted py-4">ไม่พบข้อมูลฟอร์ม</td>
                     </tr>
                   <% } %>
                 </tbody>

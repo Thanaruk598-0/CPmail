@@ -40,6 +40,8 @@ const userSchema = new Schema(
     courses: [{ type: Schema.Types.ObjectId, ref: "Course" }],
     sections: [{ type: Schema.Types.ObjectId, ref: "Section" }],
     mustChangePassword: { type: Boolean, default: false },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );

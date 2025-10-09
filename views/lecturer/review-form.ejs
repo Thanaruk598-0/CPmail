@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>ตรวจคำร้อง - FormEase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .card-soft { border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+    .timeline-dot { width: 10px; height: 10px; background-color: #0d6efd; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .timeline-active .timeline-dot { background-color: #198754; }
+  </style>
+</head>
+
+<body>
+<div class="container py-4">
+  <% if (!form) { %>
+    <div class="alert alert-danger">ไม่พบข้อมูลคำร้อง</div>
+  <% } %>
+
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h3>ตรวจคำร้องของนักศึกษา</h3>
+      <div class="text-muted">ตรวจสอบและให้ข้อเสนอแนะต่อคำร้องนี้</div>
+    </div>
+    <span class="badge bg-warning text-dark px-3 py-2"><%= (form && form.status) || '-' %></span>
+  </div>
+
+  <div class="row g-4">
+    <!-- ซ้าย -->
+    <div class="col-lg-8">
+      <!-- ข้อมูลนักศึกษา -->
+      <div class="card card-soft mb-4">
+        <div class="card-header bg-white fw-bold">ข้อมูลนักศึกษา</div>
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <div><strong>ชื่อ - นามสกุล</strong></div>
+              <div><%= form?.student?.name || '-' %></div>
+              <div class="text-muted"><%= form?.student?.email || '-' %></div>
+            </div>
+            <div class="col-md-6">
+              <div><strong>รหัสนักศึกษา</strong></div>
+              <div><%= form?.student?.studentId || '-' %></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div><strong>หลักสูตร</strong></div>
+              <div><%= form?.student?.program || '-' %></div>
+            </div>
+            <div class="col-md-6">
+              <div><strong>ชั้นปี</strong></div>
+              <div><%= form?.student?.year || '-' %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- รายละเอียดคำร้อง -->
+      <div class="card card-soft">
+        <div class="card-header bg-white d-flex justify-content-between">
+          <strong>รายละเอียดคำร้อง</strong>
+          <small class="text-muted">
+            <% const _d = form?.submittedAt ? new Date(form.submittedAt) : null; %>
+            ส่งเมื่อ: <%= _d ? _d.toLocaleString('th-TH') : '-' %>
+          </small>
+        </div>
+        <div class="card-body">
+          <!-- ชื่อฟอร์ม + ข้อมูลจาก FormTemplate -->
+          <p class="mb-1"><strong>ชื่อฟอร์ม:</strong> <%= form?.formType || '-' %></p>
+          <div class="text-muted small mb-3">
+            หมวดหมู่เทมเพลต: <strong><%= form?.template?.category || '-' %></strong>
+            คำอธิบาย: <strong><%= form?.template?.description || '-' %></strong>
+          </div>
+
+          <div class="mb-3">
+            <strong>ข้อมูลรายวิชา</strong>
+            <div class="border rounded p-2 mt-1">
+              <div><strong>รหัส:</strong> <%= form?.course?.code || '-' %></div>
+              <div><strong>ชื่อวิชา:</strong> <%= form?.course?.name || '-' %></div>
+              <div><strong>ตอนเรียน:</strong> <%= form?.course?.section || '-' %></div>
+              <div><strong>หน่วยกิต:</strong> <%= (form?.course?.credits ?? '-') %> หน่วยกิต</div>
+            </div>
+          </div>
+
+          <div>
+            <strong>คำร้องของนักศึกษา:</strong>
+            <div class="border rounded p-2 mt-1 bg-light">
+              <%= form?.requestText || '-' %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ขวา -->
+    <div class="col-lg-4">
+      <!-- Timeline -->
+      <div class="card card-soft mb-4">
+        <div class="card-header bg-white fw-bold">ไทม์ไลน์</div>
+        <div class="card-body">
+          <% (form?.timeline || []).forEach(step => { %>
+            <div class="mb-3 <%= step.active ? 'timeline-active' : '' %>">
+              <div><span class="timeline-dot"></span><strong><%= step.label || '-' %></strong></div>
+              <div class="text-muted small"><%= step.by || '' %></div>
+              <div class="text-muted small"><%= step.time || '' %></div>
+            </div>
+          <% }) %>
+          <% if (!(form?.timeline && form.timeline.length)) { %>
+            <div class="text-muted">— ไม่มีข้อมูลไทม์ไลน์ —</div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div> <!-- /.row -->
+</div> <!-- /.container -->
+
+
+<!-- ✨ วาง Script ไว้ท้าย body -->
+<script>
+window.addEventListener('load', function () {
+  const FORM_ID = '<%= (form && form.id) ? form.id : "" %>';
+  console.log('[review] พร้อมใช้งาน, formId =', FORM_ID);
+  if (!FORM_ID) { console.warn('[review] ไม่พบ formId'); return; }
+
+  const host = document.querySelector('.col-lg-8') || document.querySelector('.container') || document.body;
+  const card = document.createElement('div');
+  card.className = 'card card-soft mt-4';
+  card.innerHTML = `
+    <div class="card-header bg-white fw-bold">บันทึกความคิดเห็น / การตรวจคำร้อง</div>
+    <div class="card-body">
+      <div class="mb-1">
+        <label class="form-label">รายละเอียดความคิดเห็น</label>
+        <textarea id="comments" class="form-control" rows="5" maxlength="500"
+          placeholder="กรอกความคิดเห็น เหตุผล หรือคำแนะนำเพิ่มเติม..."></textarea>
+        <div class="form-text"><span id="c-count">0</span>/500 ตัวอักษร</div>
+      </div>
+      <div class="mb-3 d-flex gap-3 flex-wrap">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="notifyStudent" checked>
+          <label class="form-check-label" for="notifyStudent">แจ้งเตือนนักศึกษาทางอีเมล</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="requireFollowUp">
+          <label class="form-check-label" for="requireFollowUp">ต้องติดตามเพิ่มเติม</label>
+        </div>
+      </div>
+      <!-- ✅ แก้เพิ่ม hidden input -->
+      <input type="hidden" id="feedbackType" value="general">
+      <div class="d-flex flex-wrap gap-2">
+        <button id="btnApprove" class="btn btn-success"> อนุมัติคำร้อง</button>
+        <button id="btnReject"  class="btn btn-danger"> ไม่อนุมัติ</button>
+        <button id="btnSaveFeedback" class="btn btn-primary">บันทึกความคิดเห็น</button>
+      </div>
+      <div id="fbMsg" class="alert mt-3 d-none" role="alert"></div>
+    </div>`;
+  host.appendChild(card);
+
+  const ta = card.querySelector('#comments');
+  card.querySelector('#c-count').textContent = '0';
+  ta.addEventListener('input', () => card.querySelector('#c-count').textContent = String(ta.value.length));
+
+  async function postJSON(url, body) {
+    const res = await fetch(url, {
+      method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+      body: JSON.stringify(body || {})
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    return res.json();
+  }
+
+  const payload = () => ({
+    feedbackType: card.querySelector('#feedbackType').value,
+    comments: (ta.value || '').trim(),
+    notify: card.querySelector('#notifyStudent').checked,
+    followUp: card.querySelector('#requireFollowUp').checked
+  });
+
+  const msg = card.querySelector('#fbMsg');
+  const ok = t => { msg.className='alert alert-success mt-3'; msg.textContent=t||'ดำเนินการสำเร็จ'; msg.classList.remove('d-none'); };
+  const er = t => { msg.className='alert alert-danger mt-3';  msg.textContent=t||'เกิดข้อผิดพลาด'; msg.classList.remove('d-none'); };
+
+const REDIRECT_URL = 'http://localhost:3000/history/history#';
+const BASE_URL = '/lecturers/forms';
+
+card.querySelector('#btnSaveFeedback').addEventListener('click', async () => {
+  try { 
+    ok((await postJSON(`${BASE_URL}/${FORM_ID}/feedback`, payload())).message || 'บันทึกความคิดเห็นเรียบร้อย'); 
+    // redirect หลังบันทึก
+    setTimeout(()=>location.href = REDIRECT_URL, 500);
+  } catch(e){ er('บันทึกไม่สำเร็จ: ' + e.message); }
+});
+
+card.querySelector('#btnApprove').addEventListener('click', async () => {
+  if (!confirm('ยืนยันการ “อนุมัติ” คำร้องนี้ใช่หรือไม่?')) return;
+  try { 
+    ok((await postJSON(`${BASE_URL}/${FORM_ID}/approve`, payload())).message || 'อนุมัติเรียบร้อย'); 
+    // redirect หลังอนุมัติ
+    setTimeout(()=>location.href = REDIRECT_URL, 500);
+  } catch(e){ er('อนุมัติไม่สำเร็จ: ' + e.message); }
+});
+
+card.querySelector('#btnReject').addEventListener('click', async () => {
+  if (!ta.value.trim() && !confirm('คุณยังไม่ได้กรอกเหตุผล ต้องการไม่อนุมัติเลยหรือไม่?')) return;
+  try { 
+    ok((await postJSON(`${BASE_URL}/${FORM_ID}/reject`, payload())).message || 'ไม่อนุมัติเรียบร้อย'); 
+    // redirect หลังไม่อนุมัติ
+    setTimeout(()=>location.href = REDIRECT_URL, 500);
+  } catch(e){ er('ไม่อนุมัติไม่สำเร็จ: ' + e.message); }
+});
+
+});
+</script>
+</body>
+</html>

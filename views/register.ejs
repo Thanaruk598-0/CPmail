@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Register | CP Mail</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #007bff, #00c6ff);
+      min-height: 100vh;
+    }
+
+    .register-container {
+      background: #fff;
+      padding: 2.5rem;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 500px;
+      margin: 3rem auto;
+    }
+
+    .register-container h2 {
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: #003366;
+      font-size: 1.8rem;
+    }
+
+    .register-container label {
+      display: block;
+      margin: 0.7rem 0 0.3rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .register-container input,
+    .register-container select {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .register-container input:focus,
+    .register-container select:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 6px rgba(0,123,255,0.3);
+    }
+
+    .btn-primary {
+      background: #ffcc00;
+      color: #003366;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: #e6b800;
+    }
+
+    .register-container p {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .register-container a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .register-container a:hover {
+      text-decoration: underline;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    .alert.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .alert.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <h2>สมัครสมาชิก</h2>
+
+    <% if (error) { %>
+      <div class="alert error"><%= error %></div>
+    <% } %>
+
+    <% if (success) { %>
+      <div class="alert success"><%= success %></div>
+    <% } %>
+
+    <form action="/users/add" method="POST">
+      <label>ชื่อผู้ใช้งาน:</label>
+      <input type="text" name="name" required>
+
+      <label>Email (@kkumail.com):</label>
+      <input type="email" name="email" required>
+
+      <label>Phone:</label>
+      <input type="text" name="phone">
+
+      <label>Avatar URL:</label>
+      <input type="text" name="avatarUrl">
+
+      <label>Student ID:</label>
+      <input type="text" name="studentId">
+
+      
+
+      <label>Password:</label>
+      <input type="password" name="password" required>
+
+      <label>ยืนยันรหัสผ่าน:</label>
+      <input type="password" name="confirmPassword" required>
+
+      <button type="submit" class="btn-primary">บันทึก</button>
+    </form>
+
+    <p>มีบัญชีอยู่แล้ว? <a href="/user/login">เข้าสู่ระบบ</a></p>
+  </div>
+</body>
+</html>

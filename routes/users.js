@@ -4,35 +4,37 @@ const bcrypt = require("bcryptjs");
 
 const User = require('../models/User'); 
 
-// หน้า Form Insert
-router.get("/add", (req, res) => {
-  res.render("addUser");
+router.get("/register", (req, res) => {
+  res.render("register", { error: null, success: null });
 });
 
-// บันทึกข้อมูล
+// เพิ่มผู้ใช้งานใหม่
 router.post("/add", async (req, res) => {
   try {
-    const { name, email, phone, avatarUrl, studentId, role, password } = req.body;
+    const { name, email, phone, avatarUrl, studentId, role, password, confirmPassword } = req.body;
 
-    // เข้ารหัสรหัสผ่าน
+    if (password !== confirmPassword) {
+      return res.render("register", { error: "รหัสผ่านไม่ตรงกัน", success: null });
+    }
+
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // สร้าง User ใหม่
     const user = new User({
       name,
       email,
       phone,
       avatarUrl,
-      studentId,
-      role,
-      passwordHash
+      universityId: studentId, 
+      role: "student",
+      passwordHash,
     });
 
-    await user.save();
-    res.send("เพิ่มผู้ใช้งานเรียบร้อยแล้ว");
+    await user.save(); 
+
+    res.render("register", { success: "เพิ่มผู้ใช้งานเรียบร้อยแล้ว", error: null });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    console.error("❌ Error saving user:", err);
+    res.render("register", { error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล", success: null });
   }
 });
 
