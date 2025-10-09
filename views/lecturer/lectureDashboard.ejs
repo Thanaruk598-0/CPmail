@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Lecturer Dashboard - FormEase</title>
+  <title>แดชบอร์ดอาจารย์ - FormEase</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -11,33 +11,33 @@
   <%- include('../partials/navbar', { user: currentUser, activeMenu: 'dashboard' }) %>
 
   <div class="container py-4">
-    <h2 class="mb-3">Lecturer Dashboard</h2>
-    <p class="text-muted">Welcome, <strong><%= currentUser.name %></strong> | <%= currentDate %></p>
+    <h2 class="mb-3">แดชบอร์ดอาจารย์</h2>
+    <p class="text-muted">สวัสดี <strong><%= currentUser.name %></strong> | <%= currentDate %></p>
 
     <!-- สรุปสถิติ -->
     <div class="row mb-4">
       <div class="col-md-3">
         <div class="card text-center p-3">
           <h4 class="text-primary"><%= totalForms %></h4>
-          <p class="text-muted">Forms Assigned</p>
+          <p class="text-muted">ฟอร์มที่ได้รับมอบหมาย</p>
         </div>
       </div>
       <div class="col-md-3">
         <div class="card text-center p-3">
           <h4 class="text-warning"><%= pending %></h4>
-          <p class="text-muted">Pending Review</p>
+          <p class="text-muted">รอตรวจสอบ</p>
         </div>
       </div>
       <div class="col-md-3">
         <div class="card text-center p-3">
           <h4 class="text-success"><%= approved %></h4>
-          <p class="text-muted">Approved</p>
+          <p class="text-muted">อนุมัติแล้ว</p>
         </div>
       </div>
       <div class="col-md-3">
         <div class="card text-center p-3">
           <h4 class="text-danger"><%= rejected %></h4>
-          <p class="text-muted">Rejected</p>
+          <p class="text-muted">ไม่อนุมัติ</p>
         </div>
       </div>
     </div>
@@ -45,33 +45,33 @@
     <!-- รายการฟอร์ม -->
     <div class="card mb-4">
       <div class="card-header">
-        <h5>Submitted Forms</h5>
+        <h5>รายการฟอร์มที่ส่ง</h5>
       </div>
       <div class="card-body">
         <% if (forms.length > 0) { %>
           <table class="table table-bordered table-hover">
             <thead>
               <tr>
-                <th>Student</th>
-                <th>Form Title</th>
-                <th>Course</th>
-                <th>Status</th>
-                <th>Submitted</th>
+                <th>นักศึกษา</th>
+                <th>ชื่อฟอร์ม</th>
+                <th>รายวิชา</th>
+                <th>สถานะ</th>
+                <th>วันที่ส่ง</th>
               </tr>
             </thead>
             <tbody>
               <% forms.forEach(f => { %>
                 <tr>
-                  <td><%= f.submitter?.name || 'Unknown' %></td>
-                  <td><%= f.template?.title || 'Untitled' %></td>
+                  <td><%= f.submitter?.name || 'ไม่ทราบชื่อ' %></td>
+                  <td><%= f.template?.title || 'ไม่มีชื่อฟอร์ม' %></td>
                   <td><%= f.course?.name || '-' %></td>
                   <td>
                     <% if (f.status === 'approved') { %>
-                      <span class="badge bg-success">Approved</span>
+                      <span class="badge bg-success">อนุมัติ</span>
                     <% } else if (f.status === 'pending') { %>
-                      <span class="badge bg-warning text-dark">Pending</span>
+                      <span class="badge bg-warning text-dark">รอตรวจสอบ</span>
                     <% } else if (f.status === 'rejected') { %>
-                      <span class="badge bg-danger">Rejected</span>
+                      <span class="badge bg-danger">ไม่อนุมัติ</span>
                     <% } else { %>
                       <span class="badge bg-secondary"><%= f.status %></span>
                     <% } %>
@@ -82,7 +82,7 @@
             </tbody>
           </table>
         <% } else { %>
-          <p class="text-muted">No forms submitted yet.</p>
+          <p class="text-muted">ยังไม่มีการส่งฟอร์ม</p>
         <% } %>
       </div>
     </div>
@@ -92,20 +92,20 @@
       <div class="col-md-6">
         <div class="card">
           <div class="card-header">
-            <h5>Recent Activity</h5>
+            <h5>กิจกรรมล่าสุด</h5>
           </div>
           <div class="card-body">
             <% if (recentActivity.length > 0) { %>
               <% recentActivity.forEach(a => { %>
                 <div class="mb-2">
-                  <strong><%= a.student %></strong> submitted 
-                  "<%= a.formTitle %>" 
-                  (<%= a.status %>) 
+                  <strong><%= a.student %></strong> ส่งฟอร์ม
+                  "<%= a.formTitle %>"
+                  (<% if (a.status === 'approved') { %> อนุมัติ <% } else if (a.status === 'pending') { %> รอตรวจสอบ <% } else if (a.status === 'rejected') { %> ไม่อนุมัติ <% } else { %><%= a.status %><% } %>)
                   <span class="text-muted small">— <%= a.timeAgo %></span>
                 </div>
               <% }) %>
             <% } else { %>
-              <p class="text-muted">No recent activity.</p>
+              <p class="text-muted">ยังไม่มีกิจกรรมล่าสุด</p>
             <% } %>
           </div>
         </div>
@@ -115,18 +115,18 @@
       <div class="col-md-6">
         <div class="card">
           <div class="card-header">
-            <h5>Notifications</h5>
-            <span class="badge bg-primary"><%= unreadNotifications %> unread</span>
+            <h5>การแจ้งเตือน</h5>
+            <span class="badge bg-primary"><%= unreadNotifications %> รายการใหม่</span>
           </div>
           <div class="card-body">
             <% if (recentNotifications.length > 0) { %>
               <% recentNotifications.forEach(n => { %>
                 <div class="alert alert-info mb-2">
-                  <%= n.message || 'Notification' %>
+                  <%= n.message || 'การแจ้งเตือน' %>
                 </div>
               <% }) %>
             <% } else { %>
-              <p class="text-muted">No new notifications.</p>
+              <p class="text-muted">ไม่มีการแจ้งเตือนใหม่</p>
             <% } %>
           </div>
         </div>
@@ -137,8 +137,8 @@
  <!-- Courses & Sections Section -->
 <div class="card mb-4 shadow-sm">
   <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-    <h5 class="mb-0"><i class="fas fa-book-open me-2"></i>Courses & Sections</h5>
-    <span class="badge bg-light text-dark"><%= courses.length %> Courses</span>
+    <h5 class="mb-0"><i class="fas fa-book-open me-2"></i>รายวิชาและกลุ่มเรียน</h5>
+    <span class="badge bg-light text-dark"><%= courses.length %> รายวิชา</span>
   </div>
   <div class="card-body">
     <% if (courses.length > 0) { %>
@@ -146,7 +146,7 @@
         <div class="mb-4 p-3 border rounded bg-light">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="fw-bold mb-0"><i class="fas fa-graduation-cap me-1"></i><%= course.name %> (<%= course.courseId %>)</h6>
-            <small class="text-muted">Lecturers: 
+            <small class="text-muted">อาจารย์ผู้สอน:
               <% course.lecturers.forEach((lect, i) => { %>
                 <%= lect.name %><%= i < course.lecturers.length - 1 ? ', ' : '' %>
               <% }) %>
@@ -157,10 +157,10 @@
             <table class="table table-sm table-hover table-bordered mb-0">
               <thead class="table-secondary">
                 <tr>
-                  <th>Section</th>
-                  <th>Semester</th>
-                  <th>Year</th>
-                  <th>Room</th>
+                  <th>กลุ่มเรียน</th>
+                  <th>ภาคการศึกษา</th>
+                  <th>ปีการศึกษา</th>
+                  <th>ห้อง</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,12 +175,12 @@
               </tbody>
             </table>
           <% } else { %>
-            <p class="text-muted mb-0"><i class="fas fa-info-circle me-1"></i>No sections for this course.</p>
+            <p class="text-muted mb-0"><i class="fas fa-info-circle me-1"></i>ไม่มีข้อมูลกลุ่มเรียนสำหรับรายวิชานี้</p>
           <% } %>
         </div>
       <% }) %>
     <% } else { %>
-      <p class="text-muted"><i class="fas fa-exclamation-triangle me-1"></i>No courses available.</p>
+      <p class="text-muted"><i class="fas fa-exclamation-triangle me-1"></i>ไม่มีรายวิชา</p>
     <% } %>
   </div>
 </div>

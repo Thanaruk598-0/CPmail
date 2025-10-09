@@ -22,9 +22,9 @@
         </div>
 
         <% if (currentUser.role === 'admin') { %>
-          <a class="btn btn-sm btn-light ms-2" href="/Dashboard/dashboard">Admin Dashboard</a>
+          <a class="btn btn-sm btn-light ms-2" href="/Dashboard/dashboard">แดชบอร์ดแอดมิน</a>
         <% } else if (currentUser.role === 'lecturer') { %>
-          <a class="btn btn-sm btn-light ms-2" href="/lectureDashboard/dashboard">Lecturer Dashboard</a>
+          <a class="btn btn-sm btn-light ms-2" href="/lectureDashboard/dashboard">แดชบอร์ดอาจารย์</a>
         <% } else if (currentUser.role === 'student') { %>
           <a class="btn btn-sm btn-light ms-2" href="/student/dashboard">Student Dashboard</a>
         <% } %>
@@ -43,38 +43,37 @@
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
       <% if (currentUser && currentUser.role === 'admin') { %>
-        <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'adminDashboard'){ %>active<% } %>" href="/Dashboard/dashboard">AdminDashboard</a>
+         <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'adminDashboard'){ %>active<% } %>" href="/Dashboard/dashboard">แดชบอร์ดผู้ดูแลระบบ</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>" href="/manageUser/list">UserManagement</a>
+          <a class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>" href="/manageUser/list">จัดการผู้ใช้</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>" href="/manageCourse/list">Courses&Sections</a>
+          <a class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>" href="/manageCourse/list">จัดการรายวิชาและกลุ่มเรียน</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'email'){ %>active<% } %>" href="/emails/compose">EmailManagement</a>
+          <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>" href="/users/profile/<%= currentUser._id %>">โปรไฟล์</a>
         </li>
       <% } %>
 
-      <% if (currentUser && currentUser.role === 'lecturer') { %>
+     
+
+     <% if (currentUser && currentUser.role === 'lecturer') { %>
         <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'lectureDashboard'){ %>active<% } %>" href="/lectureDashboard/dashboard">LecturerDashboard</a>
+          <a class="nav-link <% if(activeMenu === 'lectureDashboard'){ %>active<% } %>" href="/lectureDashboard/dashboard">แดชบอร์ดอาจารย์</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'myCourses'){ %>active<% } %>" href="/lectureDashboard/mycourses">My Courses</a>
+          <a class="nav-link <% if(activeMenu === 'reports'){ %>active<% } %>" href="/lecturer/reports">รายงาน</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'formHistory'){ %>active<% } %>" href="/history/history">ประวัติฟอร์ม</a>
         </li>
       <% } %>
 
       <% if (currentUser && currentUser.role === 'student') { %>
         <li class="nav-item">
           <a class="nav-link <% if(activeMenu === 'studentDashboard'){ %>active<% } %>" href="/student/dashboard">StudentDashboard</a>
-        </li>
-      <% } %>
-
-      <% if (currentUser) { %>
-        <li class="nav-item">
-          <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>" href="/users/profile/<%= currentUser._id %>">Profile</a>
         </li>
       <% } %>
 

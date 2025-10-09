@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ประวัติการส่งแบบฟอร์ม - FormEase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .stats-card { border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; padding: 20px; }
+    .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 0.8em; }
+    .priority-badge { padding: 2px 6px; border-radius: 10px; font-size: 0.7em; }
+    .filter-section { background: #f8f9fa; border-radius: 8px; padding: 20px; }
+    .table-avatar { width: 32px; height: 32px; border-radius: 50%; }
+    .form-type-icon { width: 20px; height: 20px; margin-right: 5px; }
+    .actions-col { width: 220px; }
+    .btn-sm { margin-right: 4px; margin-bottom: 2px; }
+    .btn-group-vertical .btn { margin-bottom: 2px; }
+    @media (max-width: 768px) { .actions-col { width: 100%; } .btn-sm { width: 100%; display: block; margin-bottom: 4px !important; margin-right: 0 !important; } }
+    .pagination { justify-content: center; margin-top: 20px; }
+  </style>
+</head>
+<body class="bg-light">
+
+  <%- include('../partials/navbar', { user: currentUser, activeMenu: 'formHistory' }) %>
+
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="h3 mb-1">ประวัติการส่งแบบฟอร์ม</h1>
+          <p class="text-muted mb-0">ตรวจสอบและบริหารจัดการการส่งแบบฟอร์มของนักศึกษาที่อยู่ในความดูแลของคุณ</p>
+        </div>
+        <div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="filter-section">
+          <form id="filterForm" method="GET" action="/lecturer/history">
+            <div class="row g-3">
+              <div class="col-md-2">
+                <label class="form-label">สถานะ</label>
+                <select name="status" class="form-select">
+                  <option value="All Statuses" <%= statusFilter === 'All Statuses' ? 'selected' : '' %>>ทุกสถานะ</option>
+                  <option value="Pending" <%= statusFilter === 'Pending' ? 'selected' : '' %>>รอตรวจสอบ</option>
+                  <option value="Under Review" <%= statusFilter === 'Under Review' ? 'selected' : '' %>>กำลังตรวจสอบ</option>
+                  <option value="Approved" <%= statusFilter === 'Approved' ? 'selected' : '' %>>อนุมัติ</option>
+                  <option value="Rejected" <%= statusFilter === 'Rejected' ? 'selected' : '' %>>ไม่อนุมัติ</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">ประเภทฟอร์ม</label>
+                <select name="formType" class="form-select">
+                  <% uniqueFormTypes.forEach(type => { %>
+                    <option value="<%= type %>" <%= formTypeFilter === type ? 'selected' : '' %>><%= type %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">วันที่เริ่มต้น</label>
+                <input type="date" name="fromDate" class="form-control" value="<%= fromDate %>">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">วันที่สิ้นสุด</label>
+                <input type="date" name="toDate" class="form-control" value="<%= toDate %>">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">ค้นหานักศึกษา</label>
+                <input type="text" name="searchStudent" class="form-control" placeholder="ค้นหาด้วยชื่อนักศึกษา" value="<%= searchStudent %>">
+              </div>
+              <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 mb-3">ค้นหา</button>
+                <a href="/lecturer/history" class="btn btn-outline-secondary w-100 mb-3 ms-1">ล้างค่า</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card stats-card bg-white">
+          <div class="card-body">
+            <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
+            <h2><%= totalForms %></h2>
+            <p class="mb-0">จำนวนฟอร์มทั้งหมด</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card bg-white">
+          <div class="card-body">
+            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+            <h2><%= pendingReview %></h2>
+            <p class="mb-0">รอตรวจสอบ</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card bg-white">
+          <div class="card-body">
+            <i class="fas fa-check fa-2x text-success mb-2"></i>
+            <h2><%= approved %></h2>
+            <p class="mb-0">อนุมัติ</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card bg-white">
+          <div class="card-body">
+            <i class="fas fa-times fa-2x text-danger mb-2"></i>
+            <h2><%= rejected %></h2>
+            <p class="mb-0">ไม่อนุมัติ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forms Table -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card bg-white">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>นักศึกษา</th>
+                    <th>ประเภทฟอร์ม</th>
+                    <th>วันที่ส่ง</th>
+                    <th>สถานะ</th>
+                    <th>ความเร่งด่วน</th>
+                    <th class="actions-col">การดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (forms && forms.length > 0) { %>
+                    <% forms.forEach(form => { %>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <img src="<%= form.submitter?.avatarUrl || 'https://via.placeholder.com/32' %>" alt="Avatar" class="table-avatar me-2">
+                            <div>
+                              <strong><%= form.submitter?.name || 'ไม่ทราบชื่อ' %></strong>
+                              
+                              <small class="text-muted"><%= form.submitter?.universityId || 'N/A' %></small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <i class="fas fa-file-alt form-type-icon text-primary"></i>
+                            <%= form.template?.title || 'ไม่มีชื่อฟอร์ม' %>
+                          </div>
+                        </td>
+                        <td>
+                          <%= form.createdAt ? new Date(form.createdAt).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A' %>
+                        </td>
+                        <td>
+                          <span class="status-badge <%= form.status === 'approved' ? 'bg-success' : form.status === 'pending' ? 'bg-warning' : form.status === 'rejected' ? 'bg-danger' : 'bg-secondary' %> text-white">
+                            <% if(form.status === 'approved'){ %> อนุมัติ <% } else if(form.status === 'pending'){ %> รอตรวจสอบ <% } else if(form.status === 'rejected'){ %> ไม่อนุมัติ <% } else if(form.status === 'under review'){ %> กำลังตรวจสอบ <% } else { %> - <% } %>
+                          </span>
+                        </td>
+                        <td>
+                          <span class="priority-badge <%= form.priority === 'high' ? 'bg-danger' : form.priority === 'medium' ? 'bg-warning' : 'bg-success' %> text-white">
+                            <% if(form.priority === 'high'){ %> สูงสุด <% } else if(form.priority === 'medium'){ %> ปานกลาง <% } else { %> ปกติ <% } %>
+                          </span>
+                        </td>
+                        <td>
+                          <div class="d-flex gap-1 flex-wrap">
+                            <a href="/lecturer/history/forms/<%= form._id %>/view" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
+                            <% if (form.status === 'pending') { %>
+                              <form method="POST" action="/lecturer/history/<%= form._id %>/approve" style="display: inline; margin: 0;">
+                                <button type="submit" class="btn btn-sm btn-success">อนุมัติ</button>
+                              </form>
+                              <form method="POST" action="/lecturer/history/<%= form._id %>/reject" style="display: inline; margin: 0;">
+                                <button type="submit" class="btn btn-sm btn-danger">ไม่อนุมัติ</button>
+                              </form>
+                            <% } %>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-4">ไม่พบข้อมูลฟอร์ม</td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination -->
+            <nav aria-label="Form pagination">
+              <ul class="pagination">
+                <li class="page-item disabled"><a class="page-link" href="#">ก่อนหน้า</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">ถัดไป</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function exportToCSV() {
+      alert('ฟังก์ชันส่งออก - ดาวน์โหลดเป็น CSV (ควรพัฒนาเพิ่มเติม)');
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

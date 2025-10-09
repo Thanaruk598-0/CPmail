@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายงาน & วิเคราะห์ข้อมูล - FormEase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .stats-card { border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .chart-container { height: 300px; }
+    .filter-section { background: #f8f9fa; border-radius: 8px; padding: 20px; }
+    .export-btn { margin-right: 10px; }
+  </style>
+</head>
+<body class="bg-light">
+
+  <%- include('../partials/navbar', { user: currentUser, activeMenu: 'reports' }) %>
+
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <h1 class="h3 mb-1">รายงาน & วิเคราะห์ข้อมูล</h1>
+        <p class="text-muted">ข้อมูลสถิติและภาพรวมการส่งฟอร์มและการเคลื่อนไหวนักศึกษา</p>
+      </div>
+    </div>
+
+    <!-- Export Buttons -->
+    <!-- <div class="row mb-3">
+      <div class="col-12">
+        <button class="btn btn-success export-btn"><i class="fas fa-file-csv me-2"></i>ส่งออก CSV</button>
+        <button class="btn btn-danger export-btn"><i class="fas fa-file-pdf me-2"></i>ส่งออก PDF</button>
+        <button class="btn btn-secondary export-btn"><i class="fas fa-sync-alt me-2"></i>รีเฟรช</button>
+      </div>
+    </div> -->
+
+    <!-- Filters -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="filter-section">
+          <div class="row">
+            <div class="col-md-3">
+              <label class="form-label">วันที่เริ่มต้น</label>
+              <input type="date" class="form-control" id="fromDate" value="<%= fromDate %>">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">วันที่สิ้นสุด</label>
+              <input type="date" class="form-control" id="toDate" value="<%= toDate %>">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">กลุ่มนักศึกษา</label>
+              <select class="form-select" id="studentGroup">
+                <option value="All" <%= studentGroup === 'All' ? 'selected' : '' %>>ทั้งหมด</option>
+                <option value="CS Year 1" <%= studentGroup === 'CS Year 1' ? 'selected' : '' %>>CS ปี 1</option>
+                <!-- เพิ่มตัวเลือกกลุ่มตามข้อมูล -->
+              </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <button class="btn btn-primary w-100" onclick="applyFilters()">กรองข้อมูล</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Stats -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card stats-card text-center bg-white">
+          <div class="card-body">
+            <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
+            <h2><%= totalSubmissions %></h2>
+            <p class="mb-1">จำนวนการส่งทั้งหมด</p>
+            <small class="text-success">+12% จากเดือนที่แล้ว</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card text-center bg-white">
+          <div class="card-body">
+            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+            <h2><%= pendingReview %></h2>
+            <p class="mb-1">รอตรวจสอบ</p>
+            <small class="text-warning">รายการที่ต้องติดตาม</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card text-center bg-white">
+          <div class="card-body">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <h2><%= overallApprovalRate %>%</h2>
+            <p class="mb-1">อัตราการอนุมัติ</p>
+            <small class="text-success">+3% ดีขึ้น</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card text-center bg-white">
+          <div class="card-body">
+            <i class="fas fa-users fa-2x text-info mb-2"></i>
+            <h2><%= activeStudents %></h2>
+            <p class="mb-1">นักศึกษาที่มีข้อมูลเคลื่อนไหว</p>
+            <small class="text-info">เดือนนี้</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1: Pies -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card bg-white">
+          <div class="card-header d-flex justify-content-between">
+            <h5>จำนวนการส่งแต่ละประเภท</h5>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary">แผนภูมิวงกลม</button>
+              <button class="btn btn-sm btn-outline-secondary">กราฟแท่ง</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="typeChart"></canvas>
+            </div>
+            <div id="typeChartData" data-labels='<%- JSON.stringify(submissionsByType.map(t => t.label)) %>' data-values='<%- JSON.stringify(submissionsByType.map(t => t.value)) %>' data-colors='<%- JSON.stringify(submissionsByType.map(t => t.color)) %>'></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-white">
+          <div class="card-header d-flex justify-content-between">
+            <h5>จำนวนการส่งแต่ละสถานะ</h5>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary">แผนภูมิวงกลม</button>
+              <button class="btn btn-sm btn-outline-secondary">กราฟแท่ง</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="statusChart"></canvas>
+            </div>
+            <div id="statusChartData" data-labels='<%- JSON.stringify(submissionsByStatus.map(s => s.label)) %>' data-values='<%- JSON.stringify(submissionsByStatus.map(s => s.value)) %>' data-colors='<%- JSON.stringify(submissionsByStatus.map(s => s.color)) %>'></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2: Trends and Performance -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card bg-white">
+          <div class="card-header d-flex justify-content-between">
+            <h5>แนวโน้มการส่งฟอร์ม</h5>
+            <div>
+              <button class="btn btn-sm btn-primary active">สัปดาห์</button>
+              <button class="btn btn-sm btn-outline-secondary">เดือน</button>
+              <button class="btn btn-sm btn-outline-secondary">ไตรมาส</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="trendChart"></canvas>
+            </div>
+            <div id="trendChartData" data-labels='<%- JSON.stringify(trendLabels) %>' data-values='<%- JSON.stringify(trendData) %>'></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-white">
+          <div class="card-header">
+            <h5>ผลการดำเนินงานแยกตามกลุ่ม</h5>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="groupChart"></canvas>
+            </div>
+            <div id="groupChartData" data-labels='<%- JSON.stringify(groupData.map(g => g.label)) %>' data-approved='<%- JSON.stringify(groupData.map(g => g.approved)) %>' data-pending='<%- JSON.stringify(groupData.map(g => g.pending)) %>' data-rejected='<%- JSON.stringify(groupData.map(g => g.rejected)) %>'></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Statistics Table -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card bg-white">
+          <div class="card-header">
+            <h5>สถิติรายละเอียดแต่ละฟอร์ม</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>ประเภทฟอร์ม</th>
+                    <th>จำนวนการส่ง</th>
+                    <th>อนุมัติ</th>
+                    <th>รอตรวจสอบ</th>
+                    <th>ไม่อนุมัติ</th>
+                    <th>อัตราอนุมัติ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% detailedStats.forEach(stat => { %>
+                    <tr>
+                      <td><%= stat.title %></td>
+                      <td><%= stat.total %></td>
+                      <td><%= stat.approved %></td>
+                      <td><%= stat.pending %></td>
+                      <td><%= stat.rejected %></td>
+                      <td><%= stat.approvalRate %>%</td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Pie/Doughnut Charts
+    function renderPieChart(canvasId, dataId) {
+      const chartDiv = document.getElementById(dataId);
+      const labels = JSON.parse(chartDiv.dataset.labels || '[]');
+      const values = JSON.parse(chartDiv.dataset.values || '[]');
+      const colors = JSON.parse(chartDiv.dataset.colors || ['#3B82F6', '#10B981', '#F59E0B', '#EF4444']);
+      if (labels.length > 0) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: { labels, datasets: [{ data: values, backgroundColor: colors }] },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+    }
+
+    // Line Chart
+    function renderLineChart(canvasId, dataId) {
+      const chartDiv = document.getElementById(dataId);
+      const labels = JSON.parse(chartDiv.dataset.labels || '[]');
+      const values = JSON.parse(chartDiv.dataset.values || '[]');
+      if (labels.length > 0) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'จำนวนการส่ง', data: values, borderColor: '#3B82F6', fill: false }] },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+    }
+
+    // Stacked Bar Chart
+    function renderBarChart(canvasId, dataId) {
+      const chartDiv = document.getElementById(dataId);
+      const labels = JSON.parse(chartDiv.dataset.labels || '[]');
+      const approved = JSON.parse(chartDiv.dataset.approved || '[]');
+      const pending = JSON.parse(chartDiv.dataset.pending || '[]');
+      const rejected = JSON.parse(chartDiv.dataset.rejected || '[]');
+      if (labels.length > 0) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: 'อนุมัติ', data: approved, backgroundColor: '#10B981' },
+              { label: 'รอตรวจสอบ', data: pending, backgroundColor: '#F59E0B' },
+              { label: 'ไม่อนุมัติ', data: rejected, backgroundColor: '#EF4444' }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderPieChart('typeChart', 'typeChartData');
+      renderPieChart('statusChart', 'statusChartData');
+      renderLineChart('trendChart', 'trendChartData');
+      renderBarChart('groupChart', 'groupChartData');
+    });
+
+    function applyFilters() {
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+      const studentGroup = document.getElementById('studentGroup').value;
+      window.location.href = `/lecturer/reports?fromDate=${fromDate}&toDate=${toDate}&studentGroup=${studentGroup}`;
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

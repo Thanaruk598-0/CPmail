@@ -16,19 +16,17 @@ const formSchema = new Schema({
     enum: ["pending", "approved", "rejected", "cancelled"],
     default: "pending",
   },
-  reviewers: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  comments: [
-    {
-      user: { type: Schema.Types.ObjectId, ref: "User" },
-      message: { type: String },
-      createdAt: { type: Date, default: Date.now },
-    },
-  ],
+
+  reviewers: { type: Schema.Types.ObjectId, ref: "User" },
+  reviewComment: { type: String },
+  reviewedAt: { type: Date },
+  reviewUpdatedAt: { type: Date }, 
+
   attachments: [{ type: String }],
   reason: { type: String },
   cancellationReason: { type: String },
-  submittedAt: { type: Date, default: Date.now },
-  reviewedAt: { type: Date },
-});
+},
+  { timestamps: true } 
+);
 
 module.exports = mongoose.model("Form", formSchema);

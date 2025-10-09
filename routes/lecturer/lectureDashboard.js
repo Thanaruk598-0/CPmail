@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Form = require('../../models/Form');
-const Course = require('../../models/course');
-const Section = require('../../models/section');
+const Course = require('../../models/Course');
+const Section = require('../../models/Section');
 const Notification = require('../../models/Notification');
 const checkLecturer = require('../../middleware/checkLecturer'); // middleware ตรวจสิทธิ์อาจารย์
 

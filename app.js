@@ -19,6 +19,10 @@ const manageCourseRouter = require('./routes/manageCourse');
 const Dashboard = require('./routes/adminDashboard');
 
 const lectureDashboard  = require('./routes/lecturer/lectureDashboard');
+const lecturerReportRoutes = require("./routes/lecturer/reports");
+const lecturerRouter = require('./routes/lecturer/formHistory');
+
+
 
 
 var app = express();
@@ -57,6 +61,8 @@ app.use('/manageCourse', manageCourseRouter);
 
 app.use('/Dashboard', Dashboard);
 app.use('/lectureDashboard', lectureDashboard);
+app.use("/lecturer", lecturerReportRoutes);
+app.use("/history", lecturerRouter);
 
 
 // catch 404 and forward to error handler

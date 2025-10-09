@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - FormEase</title>
+  <title>แดชบอร์ดผู้ดูแลระบบ - FormEase</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,8 +23,8 @@
     <!-- Header -->
     <div class="row mb-4">
       <div class="col-12">
-        <h1 class="h3 mb-1">Admin Dashboard</h1>
-        <p class="text-muted">Monitor and manage the FormEase system.</p>
+        <h1 class="h3 mb-1">แดชบอร์ดผู้ดูแลระบบ</h1>
+        <p class="text-muted">ตรวจสอบและจัดการระบบ FormEase</p>
       </div>
     </div>
 
@@ -33,8 +33,8 @@
       <div class="col-12">
         <div class="alert alert-success d-flex justify-content-between align-items-center">
           <i class="fas fa-check-circle me-2"></i>
-          <span>System Status: All services operational</span>
-          <small class="text-muted">Last updated: Just now</small>
+          <span>สถานะระบบ: ทุกบริการทำงานปกติ</span>
+          <small class="text-muted">อัพเดตล่าสุด: ขณะนี้</small>
         </div>
       </div>
     </div>
@@ -45,8 +45,8 @@
         <div class="card status-card text-center bg-white">
           <div class="card-body">
             <h2 class="text-primary"><%= (totalForms || 0).toLocaleString() %></h2>
-            <p class="mb-2">Total Forms</p>
-            <small class="text-success"><i class="fas fa-arrow-up"></i> +<%= growthFromLastMonth || 0 %>% from last month</small>
+            <p class="mb-2">ฟอร์มทั้งหมด</p>
+            <small class="text-success"><i class="fas fa-arrow-up"></i> +<%= growthFromLastMonth || 0 %>% จากเดือนที่แล้ว</small>
             <i class="fas fa-file-alt fa-2x text-primary mt-2"></i>
           </div>
         </div>
@@ -55,8 +55,8 @@
         <div class="card status-card text-center bg-white">
           <div class="card-body">
             <h2 class="text-warning"><%= pending || 0 %></h2>
-            <p class="mb-2">Pending Review</p>
-            <small class="text-warning">Requires attention</small>
+            <p class="mb-2">รอตรวจสอบ</p>
+            <small class="text-warning">รายการที่ต้องติดตาม</small>
             <i class="fas fa-clock fa-2x text-warning mt-2"></i>
           </div>
         </div>
@@ -65,8 +65,8 @@
         <div class="card status-card text-center bg-white">
           <div class="card-body">
             <h2 class="text-success"><%= approved || 0 %></h2>
-            <p class="mb-2">Approved</p>
-            <small class="text-success"><%= approvalRate || 0 %>% approval rate</small>
+            <p class="mb-2">อนุมัติ</p>
+            <small class="text-success"><%= approvalRate || 0 %>% อัตราการอนุมัติ</small>
             <i class="fas fa-check fa-2x text-success mt-2"></i>
           </div>
         </div>
@@ -75,8 +75,8 @@
         <div class="card status-card text-center bg-white">
           <div class="card-body">
             <h2 class="text-danger"><%= rejected || 0 %></h2>
-            <p class="mb-2">Rejected</p>
-            <small class="text-danger"><%= rejectionRate || 0 %>% rejection rate</small>
+            <p class="mb-2">ไม่อนุมัติ</p>
+            <small class="text-danger"><%= rejectionRate || 0 %>% อัตราการไม่อนุมัติ</small>
             <i class="fas fa-times fa-2x text-danger mt-2"></i>
           </div>
         </div>
@@ -88,8 +88,8 @@
       <div class="col-md-6">
         <div class="card bg-white">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Recent Activity</h5>
-            <button class="btn btn-outline-secondary btn-sm">Refresh</button>
+            <h5 class="mb-0">กิจกรรมล่าสุด</h5>
+            <button class="btn btn-outline-secondary btn-sm">รีเฟรช</button>
           </div>
           <div class="card-body">
             <% if (recentActivity && recentActivity.length > 0) { %>
@@ -97,14 +97,14 @@
                 <div class="activity-item d-flex align-items-center">
                   <i class="fas fa-circle text-success me-3"></i>
                   <div>
-                    <strong><%= activity.action || 'Action' %> by <%= activity.by || 'Unknown' %></strong>
-                    <p class="mb-0 small text-muted"><%= activity.details || 'No details' %></p>
+                    <strong><%= activity.action || 'กิจกรรม' %> โดย <%= activity.by || 'ไม่ทราบชื่อ' %></strong>
+                    <p class="mb-0 small text-muted"><%= activity.details || 'ไม่มีรายละเอียด' %></p>
                     <small class="text-muted"><%= new Date(activity.time).toLocaleString('th-TH') %></small>
                   </div>
                 </div>
               <% }); %>
             <% } else { %>
-              <p class="text-muted">No recent activity.</p>
+              <p class="text-muted">ไม่มีกิจกรรมล่าสุด</p>
             <% } %>
           </div>
         </div>
@@ -113,7 +113,7 @@
       <div class="col-md-6">
         <div class="card bg-white position-relative">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Notifications</h5>
+            <h5 class="mb-0">การแจ้งเตือน</h5>
             <span class="badge bg-primary notification-badge"><%= unreadNotifications || 0 %></span>
           </div>
           <div class="card-body">
@@ -121,15 +121,15 @@
               <% recentNotifications.forEach(notif => { %>
                 <div class="alert alert-info mb-2">
                   <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
-                  <%= notif.message || 'Notification' %>
-                  <small class="d-block text-muted">15+ forms per hour</small>
+                  <%= notif.message || 'การแจ้งเตือน' %>
+                  <small class="d-block text-muted">มากกว่า 15 ฟอร์มต่อชั่วโมง</small>
                 </div>
               <% }); %>
             <% } else { %>
               <div class="alert alert-info mb-2">
                 <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
-                High Form Submission Volume
-                <small class="d-block text-muted">15+ forms per hour</small>
+                มีการส่งฟอร์มจำนวนมาก
+                <small class="d-block text-muted">มากกว่า 15 ฟอร์มต่อชั่วโมง</small>
               </div>
             <% } %>
           </div>
@@ -142,8 +142,8 @@
       <div class="col-md-6">
         <div class="card bg-white">
           <div class="card-header">
-            <h5 class="mb-0">Form Status Distribution</h5>
-            <p class="text-muted small">Overview of form statuses across all departments</p>
+            <h5 class="mb-0">สัดส่วนสถานะฟอร์ม</h5>
+            <p class="text-muted small">ภาพรวมสถานะฟอร์มของทุกหน่วยงาน</p>
           </div>
           <div class="card-body">
             <div class="chart-container">
@@ -161,24 +161,24 @@
       <div class="col-md-6">
         <div class="card bg-white">
           <div class="card-header">
-            <h5 class="mb-0">System Health</h5>
+            <h5 class="mb-0">สถานะระบบ</h5>
           </div>
           <div class="card-body">
             <div class="mb-3">
-              <span class="text-success"><i class="fas fa-check me-2"></i>API Services: <%= systemHealth?.api?.status || 'Unknown' %></span>
+              <span class="text-success"><i class="fas fa-check me-2"></i>API Services: <%= systemHealth?.api?.status || 'ไม่ทราบสถานะ' %></span>
             </div>
             <div class="mb-3">
-              <span class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>Email Service: <%= systemHealth?.email?.status || 'Unknown' %></span>
+              <span class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>อีเมล: <%= systemHealth?.email?.status || 'ไม่ทราบสถานะ' %></span>
             </div>
             <div>
-              <span class="text-success"><i class="fas fa-hdd me-2"></i>Storage: <%= systemHealth?.storage?.used || 0 %>% Used</span>
+              <span class="text-success"><i class="fas fa-hdd me-2"></i>พื้นที่จัดเก็บข้อมูล: ใช้ไป <%= systemHealth?.storage?.used || 0 %>%</span>
             </div>
           </div>
         </div>
 
         <div class="card bg-white mt-3">
           <div class="card-header">
-            <h5 class="mb-0">Recent Users</h5>
+            <h5 class="mb-0">ผู้ใช้งานล่าสุด</h5>
           </div>
           <div class="card-body">
             <% if (recentUsers && recentUsers.length > 0) { %>
@@ -186,14 +186,14 @@
                 <div class="d-flex align-items-center mb-2">
                   <img src="<%= user.avatarUrl || '/default-avatar.png' %>" alt="Avatar" class="rounded-circle me-3" width="40" height="40">
                   <div>
-                    <strong><%= user.name || 'Unknown' %></strong>
-                    <br>
-                    <small class="text-muted"><%= user.role || 'User' %> • Last login: <%= user.lastLogin ? new Date(user.lastLogin).toLocaleString('th-TH') : 'Unknown' %></small>
+                    <strong><%= user.name || 'ไม่ทราบชื่อ' %></strong>
+                    
+                    <small class="text-muted"><%= user.role || 'ผู้ใช้' %> • เข้าสู่ระบบล่าสุด: <%= user.lastLogin ? new Date(user.lastLogin).toLocaleString('th-TH') : 'ไม่ทราบ' %></small>
                   </div>
                 </div>
               <% }); %>
             <% } else { %>
-              <p class="text-muted">No recent users.</p>
+              <p class="text-muted">ไม่มีผู้ใช้ล่าสุด</p>
             <% } %>
           </div>
         </div>
@@ -203,31 +203,31 @@
     <!-- Quick Actions -->
     <div class="row">
       <div class="col-md-3">
-        <a href="/admin/users" class="card quick-action text-decoration-none text-white bg-primary">
+        <a href="/manageUser/list" class="card quick-action text-decoration-none text-white bg-primary">
           <i class="fas fa-users fa-2x mb-2"></i>
-          <h6>Manage Users</h6>
-          <small>Add, edit, or remove users</small>
+          <h6>จัดการผู้ใช้</h6>
+          <small>เพิ่ม แก้ไข หรือลบผู้ใช้</small>
         </a>
       </div>
       <div class="col-md-3">
-        <a href="/admin/courses" class="card quick-action text-decoration-none text-white bg-success">
+        <a href="/manageCourse/list" class="card quick-action text-decoration-none text-white bg-success">
           <i class="fas fa-book fa-2x mb-2"></i>
-          <h6>Manage Courses</h6>
-          <small>Configure courses & sections</small>
+          <h6>จัดการรายวิชา</h6>
+          <small>ตั้งค่ารายวิชาและกลุ่ม</small>
         </a>
       </div>
       <div class="col-md-3">
         <a href="/admin/templates" class="card quick-action text-decoration-none text-white" style="background-color: #8B5CF6;">
           <i class="fas fa-file-alt fa-2x mb-2"></i>
-          <h6>Form Templates</h6>
-          <small>Create and edit templates</small>
+          <h6>แม่แบบฟอร์ม</h6>
+          <small>สร้างและแก้ไขแม่แบบ</small>
         </a>
       </div>
       <div class="col-md-3">
         <a href="/admin/reports" class="card quick-action text-decoration-none text-white bg-warning">
           <i class="fas fa-chart-bar fa-2x mb-2"></i>
-          <h6>Generate Report</h6>
-          <small>Export analytics data</small>
+          <h6>สร้างรายงาน</h6>
+          <small>ส่งออกข้อมูลวิเคราะห์</small>
         </a>
       </div>
     </div>
