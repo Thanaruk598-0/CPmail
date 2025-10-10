@@ -66,8 +66,9 @@ app.use('/users', usersRouters);      // /users/*
 app.use('/user', userloginRoutes); 
 app.use('/manageUser', manageUserRouter);
 app.use('/manageCourse', manageCourseRouter);
+
 app.use("/form-templates", formTemplateRoutes);
-app.use("/ALLTEMPLAETES", viewTemplatesRouter);
+app.use("/allteplaetes", viewTemplatesRouter);
 
 
 // catch 404 and forward to error handler

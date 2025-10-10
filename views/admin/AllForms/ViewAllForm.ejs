@@ -34,6 +34,12 @@
     .pagination .active .page-link{ background:#0d6efd; border-color:#0d6efd; color:#fff; }
     @media print{ .no-print{ display:none !important; } }
     footer{ border-top:1px solid var(--card-border); background:#fff; color:#444; }
+
+    .btn-action {
+  min-width: 50px;      /* ให้ปุ่มกว้างเท่า ๆ กัน */
+  font-weight: 600;
+}
+
   </style>
 </head>
 <body>
@@ -110,162 +116,135 @@
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card mb-4 no-print">
-      <div class="card-body">
-        <form method="GET" action="/forms" class="row g-3 align-items-end">
-          <div class="col-md-4">
-            <label class="filter-label">ค้นหา</label>
-            <input type="text" name="search" value="<%= q.search || '' %>" class="form-control" placeholder="ค้นหาชื่อแบบฟอร์ม, ผู้ส่ง, รหัสฟอร์ม..." />
-          </div>
-          <div class="col-md-3">
-            <label class="filter-label">สถานะ</label>
-            <select name="status" class="form-select">
-              <option value="">ทุกสถานะ</option>
-              <option value="approved" <%= q.status==='approved' ? 'selected' : '' %>>อนุมัติแล้ว</option>
-              <option value="pending"  <%= q.status==='pending'  ? 'selected' : '' %>>รอดำเนินการ</option>
-              <option value="rejected" <%= q.status==='rejected' ? 'selected' : '' %>>ถูกปฏิเสธ</option>
-              <option value="cancelled" <%= q.status==='cancelled' ? 'selected' : '' %>>ยกเลิกแล้ว</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="filter-label">ประเภท (หมวดหมู่)</label>
-            <select name="type" class="form-select">
-              <option value="">ทุกประเภท</option>
-              <% Object.keys(CATEGORY_TH).forEach(k => { %>
-                <option value="<%= k %>" <%= q.type===k ? 'selected' : '' %>><%= CATEGORY_TH[k] %></option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="col-md-2 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-50">ค้นหา</button>
-            <a href="/forms" class="btn btn-outline-secondary w-50">ล้าง</a>
-          </div>
-        </form>
-      </div>
-    </div>
 
     <!-- Table -->
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="mb-0">รายการแบบฟอร์ม</h5>
-          <small class="text-muted">ทั้งหมด <span class="num"><%= total %></span> รายการ</small>
-        </div>
+   <div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th>รหัสฟอร์ม</th>
+        <th>ชื่อฟอร์ม</th>
+        <th>ผู้ส่ง</th>
+        <!-- ✅ ผู้รับ (ใช้ reviewers) -->
+        <th>ผู้รับ</th>
+        <th>ประเภท</th>
+        <th>ส่งเมื่อ</th>
+        <th>สถานะ</th>
+        <th class="no-print">การดำเนินการ</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% if (list.length > 0) { %>
+      <% list.forEach(f => { %>
+        <tr>
+        
 
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th class="no-print"><input type="checkbox" id="selectAll"></th>
-                <th>รหัสฟอร์ม</th>
-                <th>ชื่อฟอร์ม</th>
-                <th>ผู้ส่ง</th>
-                <th>ประเภท</th>
-                <th>ส่งเมื่อ</th>
-                <th>สถานะ</th>
-                <th class="no-print">การดำเนินการ</th>
-              </tr>
-            </thead>
-            <tbody>
-            <% if (list.length > 0) { %>
-              <% list.forEach(f => { %>
-                <tr>
-                  <!-- เลือกหลายรายการ -->
-                  <td class="no-print">
-                    <input type="checkbox" name="ids" value="<%= f._id %>">
-                  </td>
+          <!-- รหัสฟอร์ม -->
+          <td class="num">
+            <%= f.formId || (f._id ? ("F" + String(f._id).slice(-6).toUpperCase()) : "-") %>
+          </td>
 
-                  <!-- รหัสฟอร์ม -->
-                  <td class="num"><%= f.formId || (f._id ? ("F" + String(f._id).slice(-6).toUpperCase()) : "-") %></td>
+          <!-- ชื่อฟอร์ม -->
+          <td><%= f.template?.title || "ไม่ระบุชื่อ" %></td>
 
-                  <!-- ชื่อฟอร์ม -->
-                  <td><%= f.template?.title || "ไม่ระบุชื่อ" %></td>
+          <!-- ผู้ส่ง -->
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <img src="<%= f.submitter?.avatarUrl || 'https://via.placeholder.com/32' %>"
+                   alt="" width="32" height="32" class="rounded-circle"/>
+              <div>
+                <div class="fw-semibold"><%= f.submitter?.name || 'ไม่ระบุ' %></div>
+                <small class="text-muted"><%= f.submitter?.email || '' %></small><br>
+                <small class="text-muted"><%= ROLE_TH[f.submitter?.role] || '' %></small>
+              </div>
+            </div>
+          </td>
 
-                  <!-- ผู้ส่ง (ชื่อ + เมล + บทบาท) -->
-                  <td>
-                    <div class="d-flex align-items-center gap-2">
-                      <img src="<%= f.submitter?.avatarUrl || 'https://via.placeholder.com/32' %>" alt="" width="32" height="32" class="rounded-circle"/>
-                      <div>
-                        <div class="fw-semibold"><%= f.submitter?.name || 'ไม่ระบุ' %></div>
-                        <small class="text-muted"><%= f.submitter?.email || '' %></small><br>
-                        <small class="text-muted"><%= ROLE_TH[f.submitter?.role] || '' %></small>
-                      </div>
-                    </div>
-                  </td>
-
-                  <!-- ประเภท -->
-                  <td>
-                    <span class="badge rounded-pill bg-primary-subtle text-primary">
-                      <%= CATEGORY_TH[f.template?.category] || f.template?.category || "-" %>
-                    </span>
-                  </td>
-
-                  <!-- ส่งเมื่อ -->
-                  <td>
-                    <time class="num"><%= f.submittedAt ? f.submittedAt.toLocaleDateString('th-TH') : '-' %></time>
-                    <small class="text-muted"><%= f.submittedAt ? f.submittedAt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : '' %></small>
-                  </td>
-
-                  <!-- สถานะ -->
-                  <td>
-                    <% const s = f.status; %>
-                    <% if (s==='approved'){ %>
-                      <span class="badge rounded-pill bg-success-subtle text-success"><%= STATUS_TH[s] %></span>
-                    <% } else if (s==='pending'){ %>
-                      <span class="badge rounded-pill bg-warning-subtle text-warning"><%= STATUS_TH[s] %></span>
-                    <% } else if (s==='rejected'){ %>
-                      <span class="badge rounded-pill bg-danger-subtle text-danger"><%= STATUS_TH[s] %></span>
-                    <% } else { %>
-                      <span class="badge rounded-pill bg-secondary-subtle text-secondary"><%= STATUS_TH[s] || s %></span>
-                    <% } %>
-                  </td>
-
-                  <!-- การดำเนินการ -->
-                  <td class="no-print">
-                    <a href="/forms/view/<%= f._id %>" class="btn btn-outline-primary btn-action me-1">
-                      <i class="fa-regular fa-eye"></i> ดู
-                    </a>
-                    <form action="/forms/<%= f._id %>/approve" method="POST" style="display:inline;">
-                      <button type="submit" class="btn btn-success btn-action me-1"
-                              onclick="return confirm('ยืนยันอนุมัติแบบฟอร์มนี้หรือไม่?');">
-                        <i class="fa-regular fa-circle-check"></i> อนุมัติ
-                      </button>
-                    </form>
-                    <form action="/forms/<%= f._id %>/reject" method="POST" style="display:inline;">
-                      <button type="submit" class="btn btn-outline-danger btn-action"
-                              onclick="return confirm('ยืนยันปฏิเสธแบบฟอร์มนี้หรือไม่?');">
-                        <i class="fa-regular fa-circle-xmark"></i> ปฏิเสธ
-                      </button>
-                    </form>
-                  </td>
-                </tr>
+          <!-- ✅ ผู้รับ (reviewers) -->
+          <td>
+            <% if (f.reviewers && f.reviewers.length > 0) { %>
+              <% f.reviewers.forEach(r => { %>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <img src="<%= r.avatarUrl || 'https://via.placeholder.com/28' %>"
+                       alt="" width="28" height="28" class="rounded-circle"/>
+                  <div>
+                    <div class="fw-semibold"><%= r.name || 'ไม่ระบุ' %></div>
+                    <small class="text-muted"><%= r.email || '' %></small><br>
+                    <small class="text-muted"><%= ROLE_TH[r.role] || '' %></small>
+                  </div>
+                </div>
               <% }) %>
             <% } else { %>
-              <tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลแบบฟอร์ม</td></tr>
+              <span class="text-muted">-</span>
             <% } %>
-            </tbody>
-          </table>
-        </div>
+          </td>
 
-        <!-- Pagination -->
-        <nav class="no-print">
-          <ul class="pagination justify-content-end mb-0">
-            <li class="page-item <%= currentPage <= 1 ? 'disabled' : '' %>">
-              <a class="page-link" href="<%= pageLink(prevPage) %>">ก่อนหน้า</a>
-            </li>
-            <% for (let p=Math.max(1, currentPage-2); p<=Math.min(totalP, currentPage+2); p++){ %>
-              <li class="page-item <%= p===currentPage ? 'active' : '' %>">
-                <a class="page-link" href="<%= pageLink(p) %>"><span class="num"><%= p %></span></a>
-              </li>
+          <!-- ประเภท -->
+          <td>
+            <span class="badge rounded-pill bg-primary-subtle text-primary">
+              <%= CATEGORY_TH[f.template?.category] || f.template?.category || "-" %>
+            </span>
+          </td>
+
+          <!-- ส่งเมื่อ -->
+          <td>
+            <time class="num"><%= f.submittedAt ? f.submittedAt.toLocaleDateString('th-TH') : '-' %></time>
+            <small class="text-muted">
+              <%= f.submittedAt ? f.submittedAt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : '' %>
+            </small>
+          </td>
+
+          <!-- สถานะ -->
+          <td>
+            <% const s = f.status; %>
+            <% if (s==='approved'){ %>
+              <span class="badge rounded-pill bg-success-subtle text-success"><%= STATUS_TH[s] %></span>
+            <% } else if (s==='pending'){ %>
+              <span class="badge rounded-pill bg-warning-subtle text-warning"><%= STATUS_TH[s] %></span>
+            <% } else if (s==='rejected'){ %>
+              <span class="badge rounded-pill bg-danger-subtle text-danger"><%= STATUS_TH[s] %></span>
+            <% } else { %>
+              <span class="badge rounded-pill bg-secondary-subtle text-secondary"><%= STATUS_TH[s] || s %></span>
             <% } %>
-            <li class="page-item <%= currentPage >= totalP ? 'disabled' : '' %>">
-              <a class="page-link" href="<%= pageLink(nextPage) %>">ถัดไป</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
+          </td>
+
+          
+        
+<!-- การดำเนินการ -->
+<td class="no-print">
+  <div class="d-flex flex-wrap gap-2">
+    <!-- ปุ่มดู -->
+    <a href="/viewtemplates/view/<%= f._id %>" class="btn btn-outline-primary btn-action">
+      <i class="fa-regular fa-eye"></i> 
+    </a>
+
+    <!-- ปุ่มอนุมัติ -->
+    <form action="/viewtemplates/<%= f._id %>/approve" method="POST" style="display:inline;">
+      <button type="submit" class="btn btn-success btn-action"
+              onclick="return confirm('ยืนยันอนุมัติแบบฟอร์มนี้หรือไม่?');">
+        <i class="fa-regular fa-circle-check"></i>
+      </button>
+    </form>
+
+    <!-- ปุ่มปฏิเสธ -->
+    <form action="/viewtemplates/<%= f._id %>/reject" method="POST" style="display:inline;">
+      <button type="submit" class="btn btn-outline-danger btn-action"
+              onclick="return confirm('ยืนยันปฏิเสธแบบฟอร์มนี้หรือไม่?');">
+        <i class="fa-regular fa-circle-xmark"></i>
+      </button>
+    </form>
+  </div>
+</td>
+
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลแบบฟอร์ม</td></tr>
+    <% } %>
+    </tbody>
+  </table>
+</div>
+
   </div><!-- /#exportArea -->
 
   <!-- Footer -->

@@ -17,7 +17,8 @@ router.get("/", async (req, res) => {
     // ดึงข้อมูลฟอร์มทั้งหมด
     const forms = await Form.find()
       .populate("submitter", "name email role avatarUrl")
-      .populate("template", "title category");
+      .populate("template", "title category")
+      .populate("reviewers", "name email role avatarUrl");
 
     res.render("admin/AllForms/ViewAllForm", {
       forms,
@@ -29,6 +30,56 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");
+  }
+});
+
+router.get("/view/:id", async (req, res) => {
+  try {
+    const form = await Form.findById(req.params.id)
+      .populate("template")
+      .populate("submitter")
+      .populate("reviewers");
+    if (!form) return res.status(404).send("Form not found");
+
+    res.render("admin/Forms/ViewForm", {
+      form,
+      currentUser: req.user || null,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error loading form");
+  }
+});
+
+// 👉 อนุมัติฟอร์ม
+router.post("/:id/approve", async (req, res) => {
+  try {
+    const form = await Form.findByIdAndUpdate(
+      req.params.id,
+      { status: "approved", reviewedAt: new Date() },
+      { new: true }
+    );
+    if (!form) return res.status(404).send("Form not found");
+    res.redirect("/allteplaetes"); // กลับไปหน้ารวม
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error approving form");
+  }
+});
+
+// 👉 ปฏิเสธฟอร์ม
+router.post("/:id/reject", async (req, res) => {
+  try {
+    const form = await Form.findByIdAndUpdate(
+      req.params.id,
+      { status: "rejected", reviewedAt: new Date() },
+      { new: true }
+    );
+    if (!form) return res.status(404).send("Form not found");
+    res.redirect("/allteplaetes"); // กลับไปหน้ารวม
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error rejecting form");
   }
 });
 

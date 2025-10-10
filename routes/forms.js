@@ -34,41 +34,7 @@ function getDateRange(range) {
   }
 }
 
-// 👉 View All Forms (with search + filter)
-router.get("/", async (req, res) => {
-  try {
-    const { search, status, type, priority, dateRange } = req.query;
-    const filter = {};
 
-    if (search) {
-      filter.$or = [
-        { reason: { $regex: search, $options: "i" } },
-        { "data.name": { $regex: search, $options: "i" } }, // เผื่อมี field name
-      ];
-    }
-    if (status) filter.status = status;
-    if (priority) filter.priority = priority;
-
-    if (dateRange && dateRange !== "all") {
-      const dr = getDateRange(dateRange);
-      if (dr) filter.submittedAt = dr;
-    }
-
-    const forms = await Form.find(filter)
-      .populate("template")
-      .populate("submitter")
-      .sort({ submittedAt: -1 });
-
-    res.render("admin/AllForms/ViewAllForm", {
-      forms,
-      currentUser: req.user || null,
-      query: req.query,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching forms");
-  }
-});
 
 // 👉 Student ดู Template ที่ Available
 router.get("/available", async (req, res) => {
@@ -126,7 +92,8 @@ router.get("/view/:id", async (req, res) => {
   try {
     const form = await Form.findById(req.params.id)
       .populate("template")
-      .populate("submitter");
+      .populate("submitter")
+      .populate("reviewers");
     if (!form) return res.status(404).send("Form not found");
 
     res.render("admin/Forms/ViewForm", {
