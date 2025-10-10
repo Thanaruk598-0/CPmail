@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <title>
+    <%= template ? "Edit Template" : "Create New Template" %>
+  </title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+
+<body class="p-4 bg-light">
+
+  <%- include('../../partials/navbar', { user: currentUser, activeMenu: 'formTemplates' }) %>
+
+    <div class="container mt-4">
+      <div class="card shadow-lg">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold">
+              <%= template ? "Edit Template" : "สร้างเทมเพลตใหม่" %>
+            </h3>
+            <a href="/form-templates" class="btn-close"></a>
+          </div>
+
+          <form id="templateForm"
+            action="<%= template ? '/form-templates/' + template._id + '/update' : '/form-templates' %>" method="POST">
+            <div class="row">
+              <!-- Left: Basic Information -->
+              <div class="col-md-6 border-end">
+                <h5 class="mb-3">ข้อมูลพื้นฐาน</h5>
+
+                <!-- Template Name -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">ชื่อเทมเพลต<span class="text-danger">*</span></label>
+                  <input type="text" name="title" class="form-control" value="<%= template ? template.title : '' %>"
+                    placeholder="เช่น แบบฟอร์มการประเมินรายวิชา" required>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">คำอธิบาย</label>
+                  <textarea name="description" class="form-control"
+                    placeholder="รายละเอียดของแบบฟอร์มนี้..."><%= template ? template.description : '' %></textarea>
+                </div>
+
+                <!-- Category & Status -->
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold">หมวดหมู่ <span class="text-danger">*</span></label>
+                    <select name="category" class="form-select" required>
+                      <% const categories=[ {value:"Academic", label:"ด้านวิชาการ"}, {value:"Administrative",
+                        label:"ด้านบริหาร / งานธุรการ"}, {value:"Evaluation", label:"การประเมิน"}, {value:"Request",
+                        label:"คำขอ / การร้องขอ"}, {value:"Survey", label:"แบบสำรวจ"} ]; %>
+                        <% categories.forEach(cat=> { %>
+                          <option value="<%= cat.value %>" <%=template && template.category===cat.value ? "selected"
+                            : "" %>>
+                            <%= cat.label %>
+                          </option>
+                          <% }) %>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold">สถานะ</label>
+                    <select name="status" class="form-select">
+                      <% const STATUSES=[ { value: "Active" , label: "เปิดใช้งาน" }, { value: "Inactive" ,
+                        label: "ปิดใช้งาน" }, { value: "Draft" , label: "ฉบับร่าง" } ]; %>
+                        <% STATUSES.forEach(s=> { %>
+                          <option value="<%= s.value %>" <%=template && template.status===s.value ? "selected" : "" %>>
+                            <%= s.label %>
+                          </option>
+                          <% }) %>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Role Permissions -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">สิทธิ์ตามบทบาท</label><br>
+                  <% const roles=["Student","Lecturer","Staff","Administrator"]; %>
+                    <% roles.forEach(role=> { %>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="allowedRoles" value="<%= role %>"
+                          id="role<%= role %>" <%=template && Array.isArray(template.allowedRoles) &&
+                          template.allowedRoles.includes(role) ? "checked" : "" %>>
+                        <label class="form-check-label" for="role<%= role %>">
+                          <%= role %>
+                        </label>
+                      </div>
+                      <% }) %>
+                </div>
+              </div>
+
+              <!-- Right: Form Fields -->
+              <div class="col-md-6">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="mb-0">Form Fields</h5>
+                  <button type="button" class="btn btn-success btn-sm" id="addFieldBtn">+ Add Field</button>
+                </div>
+                <div id="formFieldsContainer"></div>
+              </div>
+            </div>
+
+            <!-- Form Preview -->
+            <div class="mt-4">
+              <h5 class="mb-3">ตัวอย่างแบบฟอร์ม</h5>
+              <div id="formPreview" class="border p-3 bg-white rounded">
+                <p class="text-muted">Add fields to see preview</p>
+              </div>
+            </div>
+
+            <!-- Hidden input -->
+            <input type="hidden" name="fields" id="fieldsInput">
+
+            <!-- Submit Buttons -->
+            <div class="mt-4 d-flex justify-content-end gap-2">
+              <a href="/form-templates" class="btn btn-outline-secondary">ยกเลิก</a>
+              <button type="submit" class="btn btn-primary">
+                <%= template ? "Update Template" : "สร้างแบบฟอร์ม" %>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- แทนที่ด้วย script tag แยกสำหรับ inject ข้อมูล (type="application/json" เพื่อป้องกันการ parse เป็น JS) -->
+    <script id="initial-fields-data" type="application/json">
+      <%= JSON.stringify(template && template.fields ? template.fields : []) %>
+    </script>
+
+    <!-- โหลด JS ฝั่ง client -->
+    <script src="/form-builder.js"></script>
+
+    <script>
+      // ดึงข้อมูล fields จาก script tag ข้างบน (แทนที่การ inject ตรงๆ)
+      const initialDataScript = document.getElementById('initial-fields-data');
+      let initialFields = JSON.parse(initialDataScript.textContent || '[]');
+    </script>
+
+</body>
+
+</html>

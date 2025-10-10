@@ -34,6 +34,7 @@ const reviewRouter = require('./routes/lecturer/review');
 
 //ef
 const formTemplateRoutes = require("./routes/formTemplates");
+const viewTemplatesRouter = require("./routes/viewtemplates");
 
 
 var app = express();
@@ -88,6 +89,8 @@ app.use('/lecturer', announcements);
 app.use('/lecturers', reviewRouter);
 
 app.use("/form-templates", formTemplateRoutes);
+
+app.use("/allteplaetes", viewTemplatesRouter);
 
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist'));
 app.use('/icons', express.static(__dirname + '/node_modules/bootstrap-icons/font'));

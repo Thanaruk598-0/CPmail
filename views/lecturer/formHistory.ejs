@@ -169,7 +169,7 @@
                         </td>
                         <td>
                           <div class="d-flex gap-1 flex-wrap">
-                            <a href="/lecturer/forms/<%= form._id %>/review" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
+                            <a href="/lecturers/forms/<%= form._id %>/review" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
 
                             <% if (form.status === 'pending') { %>
                               <form method="POST" action="/lecturer/history/<%= form._id %>/approve" style="display: inline; margin: 0;">

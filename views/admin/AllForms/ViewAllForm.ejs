@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ดูแบบฟอร์มทั้งหมด</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap + Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --radius: 8px;
+      --card-border:#e6e9ef;
+      --section-bg:#f6f8fc;
+      --thead-bg:#eef2f7;
+      --num-black:#111;
+    }
+    body{ background: var(--section-bg); font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; color:#16202a; }
+    .page-title{ font-weight:700; color:#1f2d3d; }
+    .summary-card{ border:1px solid var(--card-border); border-radius:var(--radius); background:#fff; }
+    .summary-card h6{ font-size:.9rem; color:#6b7280; margin-bottom:.25rem; }
+    .summary-card p{ font-size:1.6rem; font-weight:700; margin:0; color:var(--num-black); }
+    .toolbar .btn{ border-radius:var(--radius); padding:.55rem 1rem; }
+    .table thead{ background:var(--thead-bg); }
+    .table, .card{ border-radius:var(--radius); }
+    .table tbody td{ vertical-align: middle; }
+    .table td time, .table td .num { color:var(--num-black); }
+    .badge.rounded-pill{ padding:.45rem .75rem; font-weight:600; border-radius:999px; }
+    .btn-action{ padding:.35rem .65rem; border-radius:var(--radius); }
+    .filter-label{ font-weight:600; color:#374151; }
+    .pagination .page-link{ color:#111; }
+    .pagination .active .page-link{ background:#0d6efd; border-color:#0d6efd; color:#fff; }
+    @media print{ .no-print{ display:none !important; } }
+    footer{ border-top:1px solid var(--card-border); background:#fff; color:#444; }
+
+    .btn-action {
+  min-width: 50px;      /* ให้ปุ่มกว้างเท่า ๆ กัน */
+  font-weight: 600;
+}
+
+  </style>
+</head>
+<body>
+
+  <%- include('../../partials/navbar', { user: currentUser, activeMenu: 'allForms' }) %>
+
+  <%
+    /* ====== ภาษาไทย ====== */
+    const STATUS_TH = { approved:'อนุมัติแล้ว', pending:'รอดำเนินการ', rejected:'ถูกปฏิเสธ', cancelled:'ยกเลิกแล้ว' };
+    const CATEGORY_TH = {
+      Academic:'ด้านวิชาการ', Administrative:'ด้านบริหาร / งานธุรการ',
+      Evaluation:'การประเมิน',  Request:'คำขอ / การร้องขอ',  Survey:'แบบสำรวจ'
+    };
+    const ROLE_TH = { student:'นักศึกษา', lecturer:'อาจารย์', admin:'ผู้ดูแลระบบ' };
+
+    /* ====== ข้อมูล/สรุป (รองรับยังไม่ต่อ DB) ====== */
+    const list = Array.isArray(forms) ? forms : [];
+    const total = list.length;
+    const approvedCount = list.filter(f => f.status === 'approved').length;
+    const pendingCount  = list.filter(f => f.status === 'pending').length;
+    const rejectedCount = list.filter(f => f.status === 'rejected').length;
+
+    /* ====== Pagination (fallback ถ้าไม่ได้ส่งมาจาก route) ====== */
+    const q = (typeof query !== 'undefined' && query) ? query : {};
+    const currentPage = Number((typeof page !== 'undefined' ? page : 1));
+    const totalP      = Number((typeof totalPages !== 'undefined' ? totalPages : 1));
+    const prevPage    = currentPage > 1 ? currentPage - 1 : 1;
+    const nextPage    = currentPage < totalP ? currentPage + 1 : totalP;
+    function pageLink(p){
+      const parts = [];
+      for (const k in q){ if (Object.prototype.hasOwnProperty.call(q,k) && k !== 'page'){ parts.push(encodeURIComponent(k)+'='+encodeURIComponent(q[k])); } }
+      parts.push('page='+encodeURIComponent(p));
+      return '?'+parts.join('&');
+    }
+  %>
+
+  <!-- ====== โซนส่งออก PDF ====== -->
+  <div class="container py-4" id="exportArea">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="page-title mb-1">ดูแบบฟอร์มทั้งหมด</h3>
+        <p class="text-muted mb-0">ติดตามและจัดการการส่งแบบฟอร์มทั้งหมดภายในระบบ</p>
+      </div>
+      <div class="toolbar no-print">
+        <button id="btnExportPdf" class="btn btn-success">
+          <i class="fa-solid fa-file-pdf me-1"></i> ส่งออก PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="summary-card text-center p-3">
+          <h6>จำนวนทั้งหมด</h6><p class="num"><%= total %></p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card text-center p-3">
+          <h6>อนุมัติแล้ว</h6><p class="num"><%= approvedCount %></p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card text-center p-3">
+          <h6>รอดำเนินการ</h6><p class="num"><%= pendingCount %></p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card text-center p-3">
+          <h6>ถูกปฏิเสธ</h6><p class="num"><%= rejectedCount %></p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Table -->
+   <div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th>รหัสฟอร์ม</th>
+        <th>ชื่อฟอร์ม</th>
+        <th>ผู้ส่ง</th>
+        <!-- ✅ ผู้รับ (ใช้ reviewers) -->
+        <th>ผู้รับ</th>
+        <th>ประเภท</th>
+        <th>ส่งเมื่อ</th>
+        <th>สถานะ</th>
+        <th class="no-print">การดำเนินการ</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% if (list.length > 0) { %>
+      <% list.forEach(f => { %>
+        <tr>
+        
+
+          <!-- รหัสฟอร์ม -->
+          <td class="num">
+            <%= f.formId || (f._id ? ("F" + String(f._id).slice(-6).toUpperCase()) : "-") %>
+          </td>
+
+          <!-- ชื่อฟอร์ม -->
+          <td><%= f.template?.title || "ไม่ระบุชื่อ" %></td>
+
+          <!-- ผู้ส่ง -->
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <img src="<%= f.submitter?.avatarUrl || 'https://via.placeholder.com/32' %>"
+                   alt="" width="32" height="32" class="rounded-circle"/>
+              <div>
+                <div class="fw-semibold"><%= f.submitter?.name || 'ไม่ระบุ' %></div>
+                <small class="text-muted"><%= f.submitter?.email || '' %></small><br>
+                <small class="text-muted"><%= ROLE_TH[f.submitter?.role] || '' %></small>
+              </div>
+            </div>
+          </td>
+
+          <!-- ✅ ผู้รับ (reviewers) -->
+          <td>
+            <% if (f.reviewers && f.reviewers.length > 0) { %>
+              <% f.reviewers.forEach(r => { %>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <img src="<%= r.avatarUrl || 'https://via.placeholder.com/28' %>"
+                       alt="" width="28" height="28" class="rounded-circle"/>
+                  <div>
+                    <div class="fw-semibold"><%= r.name || 'ไม่ระบุ' %></div>
+                    <small class="text-muted"><%= r.email || '' %></small><br>
+                    <small class="text-muted"><%= ROLE_TH[r.role] || '' %></small>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <span class="text-muted">-</span>
+            <% } %>
+          </td>
+
+          <!-- ประเภท -->
+          <td>
+            <span class="badge rounded-pill bg-primary-subtle text-primary">
+              <%= CATEGORY_TH[f.template?.category] || f.template?.category || "-" %>
+            </span>
+          </td>
+
+          <!-- ส่งเมื่อ -->
+          <td>
+            <time class="num"><%= f.submittedAt ? f.submittedAt.toLocaleDateString('th-TH') : '-' %></time>
+            <small class="text-muted">
+              <%= f.submittedAt ? f.submittedAt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : '' %>
+            </small>
+          </td>
+
+          <!-- สถานะ -->
+          <td>
+            <% const s = f.status; %>
+            <% if (s==='approved'){ %>
+              <span class="badge rounded-pill bg-success-subtle text-success"><%= STATUS_TH[s] %></span>
+            <% } else if (s==='pending'){ %>
+              <span class="badge rounded-pill bg-warning-subtle text-warning"><%= STATUS_TH[s] %></span>
+            <% } else if (s==='rejected'){ %>
+              <span class="badge rounded-pill bg-danger-subtle text-danger"><%= STATUS_TH[s] %></span>
+            <% } else { %>
+              <span class="badge rounded-pill bg-secondary-subtle text-secondary"><%= STATUS_TH[s] || s %></span>
+            <% } %>
+          </td>
+
+          
+        
+
+<td class="no-print">
+  <div class="d-flex flex-wrap gap-2">
+    
+    <a href="/allteplaetes/view/<%= f._id %>" class="btn btn-outline-primary btn-action">
+      <i class="fa-regular fa-eye"></i> 
+    </a>
+
+    
+    <form action="/allteplaetes/<%= f._id %>/approve" method="POST">
+  <button type="submit" class="btn btn-success btn-action"
+          onclick="return confirm('ยืนยันอนุมัติแบบฟอร์มนี้หรือไม่?');">
+    <i class="fa-regular fa-circle-check"></i>
+  </button>
+</form>
+
+    
+    <form action="/allteplaetes/<%= f._id %>/reject" method="POST">
+  <button type="submit" class="btn btn-outline-danger btn-action"
+          onclick="return confirm('ยืนยันปฏิเสธแบบฟอร์มนี้หรือไม่?');">
+    <i class="fa-regular fa-circle-xmark"></i>
+        </button>
+    </form>
+
+
+  </div>
+</td>
+
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลแบบฟอร์ม</td></tr>
+    <% } %>
+    </tbody>
+  </table>
+</div>
+
+  </div><!-- /#exportArea -->
+
+  <!-- Footer -->
+  <footer class="py-3 mt-4">
+    <div class="container d-flex justify-content-between">
+      <div>© <%= new Date().getFullYear() %> คณะวิทยาการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น</div>
+      <div class="text-muted">FormEase Admin</div>
+    </div>
+  </footer>
+
+  <!-- PDF Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+    // Select all
+    document.getElementById('selectAll')?.addEventListener('click', function () {
+      document.querySelectorAll("input[name='ids']").forEach(cb => cb.checked = this.checked);
+    });
+
+    // Export PDF (เฉพาะ #exportArea)
+    document.getElementById('btnExportPdf')?.addEventListener('click', async () => {
+      const { jsPDF } = window.jspdf;
+      const el = document.getElementById('exportArea');
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth - 16;                     // margin 8mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (imgHeight <= pageHeight - 16){
+        pdf.addImage(imgData, 'PNG', 8, 8, imgWidth, imgHeight, undefined, 'FAST');
+      } else {
+        // รองรับหลายหน้า
+        let position = 8;
+        let heightLeft = imgHeight;
+        while (heightLeft > 0) {
+          pdf.addImage(imgData, 'PNG', 8, position, imgWidth, imgHeight, undefined, 'FAST');
+          heightLeft -= (pageHeight - 16);
+          if (heightLeft > 0) { pdf.addPage(); position = 8 - (imgHeight - heightLeft); }
+        }
+      }
+      pdf.save('forms.pdf');
+    });
+  </script>
+</body>
+</html>

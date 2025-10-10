@@ -53,10 +53,13 @@
           <a class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>" href="/manageCourse/list">จัดการรายวิชาและกลุ่มเรียน</a>
         </li>
           <li class="nav-item">
-    <a class="nav-link <% if(activeMenu === 'formTemplates'){ %>active<% } %>" href="/form-templates">จัดการเทมเพลตแบบฟอร์ม </a>
+          <a class="nav-link <% if(activeMenu === 'formTemplates'){ %>active<% } %>" href="/form-templates">จัดการเทมเพลตแบบฟอร์ม </a>
        </li>
         <li class="nav-item">
           <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>" href="/users/profile/<%= currentUser._id %>">โปรไฟล์</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'viewAllForm'){ %>active<% } %>" href="/allteplaetes">ดูแบบฟอร์มทั้งหมด</a>
         </li>
       <% } %>
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ดูฟอร์มที่ส่งแล้ว</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4 bg-light">
+
+<div class="container">
+  <h3 class="mb-4">รายละเอียดฟอร์มที่ส่งแล้ว</h3>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">ฟอร์ม: <%= form.template.title %></h5>
+      <p class="text-muted">คำอธิบาย: <%= form.template.description %></p>
+      <hr>
+
+      <% if (form.data) { %>
+        <% Object.keys(form.data).forEach(key => { %>
+          <p><strong><%= key %>:</strong> <%= form.data[key] %></p>
+        <% }) %>
+      <% } %>
+
+      <% if (form.reason) { %>
+        <p><strong>เหตุผลเพิ่มเติม:</strong> <%= form.reason %></p>
+      <% } %>
+
+      <p class="text-muted small">
+        <strong>สถานะ:</strong> <%= form.status %><br>
+        <strong>ส่งเมื่อ:</strong> <%= form.createdAt.toLocaleString("th-TH") %>
+      </p>
+    </div>
+  </div>
+
+  <a href="/allteplaetes" class="btn btn-secondary mt-3">ย้อนกลับไปเลือกฟอร์ม</a>
+</div>
+
+</body>
+</html>

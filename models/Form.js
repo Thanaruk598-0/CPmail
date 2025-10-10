@@ -11,22 +11,32 @@ const formSchema = new Schema({
   course: { type: Schema.Types.ObjectId, ref: "Course" },
   section: { type: Schema.Types.ObjectId, ref: "Section" },
   data: { type: Schema.Types.Mixed },
+
+  // ✅ เพิ่ม priority ตรงนี้
+  priority: { 
+    type: String, 
+    enum: ["high", "medium", "low"], 
+    default: "medium" 
+  },
+
   status: {
     type: String,
     enum: ["pending", "approved", "rejected", "cancelled"],
     default: "pending",
   },
-
-  reviewers: { type: Schema.Types.ObjectId, ref: "User" },
-  reviewComment: { type: String },
-  reviewedAt: { type: Date },
-  reviewUpdatedAt: { type: Date }, 
-
+  reviewers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  comments: [
+    {
+      user: { type: Schema.Types.ObjectId, ref: "User" },
+      message: { type: String },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
   attachments: [{ type: String }],
   reason: { type: String },
   cancellationReason: { type: String },
-},
-  { timestamps: true } 
-);
+  submittedAt: { type: Date, default: Date.now },
+  reviewedAt: { type: Date },
+}, { timestamps: true }); // ✅ auto createdAt + updatedAt
 
 module.exports = mongoose.model("Form", formSchema);
