@@ -32,6 +32,10 @@ const authRoutes = require("./routes/auth");
 const announcements = require('./routes/announcements');
 const reviewRouter = require('./routes/lecturer/review');
 
+//ef
+const formTemplateRoutes = require("./routes/formTemplates");
+
+
 var app = express();
 
 mongoose.connect("mongodb://localhost:27017/CPmail")
@@ -82,6 +86,11 @@ app.use("/", authRoutes);
 
 app.use('/lecturer', announcements);
 app.use('/lecturers', reviewRouter);
+
+app.use("/form-templates", formTemplateRoutes);
+
+app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist'));
+app.use('/icons', express.static(__dirname + '/node_modules/bootstrap-icons/font'));
 
 
 // catch 404 and forward to error handler

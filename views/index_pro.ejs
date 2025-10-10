@@ -1,1048 +1,210 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form History - FormEase</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'kku-blue': '#1e40af',
-                        'kku-blue-light': '#3b82f6',
-                        'kku-blue-dark': '#1e3a8a'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            box-sizing: border-box;
-        }
-        .table-row {
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .table-row:hover {
-            background-color: #f9fafb;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        .status-approved {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-        .status-rejected {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        .status-under-review {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-        .filter-card {
-            background: white;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .loading-spinner {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .slide-in {
-            animation: slideIn 0.5s ease-out;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .form-type-icon {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 0.375rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: white;
-        }
-        .type-leave { background-color: #f59e0b; }
-        .type-evaluation { background-color: #10b981; }
-        .type-registration { background-color: #3b82f6; }
-        .type-research { background-color: #8b5cf6; }
-        .type-support { background-color: #ef4444; }
-        .type-other { background-color: #6b7280; }
-        
-        @media (max-width: 768px) {
-            .table-container {
-                overflow-x: auto;
-            }
-            .mobile-card {
-                background: white;
-                border-radius: 0.5rem;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .mobile-card:hover {
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                transform: translateY(-1px);
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>FormEase | มหาวิทยาลัยขอนแก่น</title>
+  <link rel="stylesheet" href="/css/home.css">
+
+   
+<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+
+
+<link rel="stylesheet" href="/icons/bootstrap-icons.css">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      color: #222;
+      scroll-behavior: smooth;
+    }
+
+    header {
+      background: #003366;
+      color: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: #fff;
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      color: #ffcc00;
+    }
+
+    section {
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    section h2, section h3 {
+      color: #003366;
+      margin-bottom: 1rem;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #007bff, #00c6ff);
+      color: white;
+      padding: 6rem 2rem;
+    }
+
+    .hero h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn-primary {
+      background: #ffcc00;
+      color: #003366;
+      padding: 0.7rem 1.5rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 0.5rem;
+      display: inline-block;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: #003366;
+      padding: 0.7rem 1.5rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 0.5rem;
+      display: inline-block;
+    }
+
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .feature-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 2rem;
+      width: 300px;
+    }
+
+    footer {
+      background: #003366;
+      color: #fff;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    footer a {
+      color: #ffcc00;
+      text-decoration: none;
+    }
+  </style>
 </head>
-<body class="bg-gray-50 font-sans">
-    <!-- Header -->
-    <header class="bg-kku-blue text-white shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between py-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                        <span class="text-kku-blue font-bold text-lg">F</span>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-bold">FormEase</h1>
-                        <p class="text-blue-200 text-sm">Faculty of Computer Science</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="hidden md:block text-right">
-                        <p class="text-sm font-medium">Dr. Jane Smith</p>
-                        <p class="text-blue-200 text-xs">Lecturer</p>
-                    </div>
-                    <button onclick="goToDashboard()" class="bg-kku-blue-light hover:bg-kku-blue-dark px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        Dashboard
-                    </button>
-                    <button onclick="logout()" class="bg-kku-blue-light hover:bg-kku-blue-dark px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
-        <div class="container mx-auto px-4">
-            <div class="flex space-x-8 overflow-x-auto">
-                <a href="#" onclick="goToDashboard()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    Dashboard
-                </a>
-                <a href="#" onclick="goToMyForms()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    My Forms
-                </a>
-                <a href="#" class="py-3 px-1 border-b-2 border-kku-blue text-kku-blue font-medium whitespace-nowrap">
-                    Form History
-                </a>
-                <a href="#" onclick="goToReports()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    Reports
-                </a>
-                <a href="#" onclick="goToProfile()" class="py-3 px-1 text-gray-500 hover:text-kku-blue font-medium whitespace-nowrap transition-colors">
-                    Profile
-                </a>
-            </div>
-        </div>
+<body>
+    
+  <header>
+    <div class="logo">
+      <h1>CP Mail</h1>
+      <span>ระบบจัดการฟอร์มดิจิทัล มหาวิทยาลัยขอนแก่น</span>
+    </div>
+    <nav>
+      <a href="#home">หน้าแรก</a>
+      <a href="#features">คุณสมบัติ</a>
+      <a href="#about">เกี่ยวกับ</a>
+      <a href="#contact">ติดต่อ</a>
     </nav>
+    <div class="profile">
+      <a href="/user/login" class="btn-secondary">เข้าสู่ระบบ</a>
+      <a href="/users/register" class="btn-primary">สมัครสมาชิก</a>
+    </div>
+  </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-6">
-        <!-- Page Header -->
-        <div class="mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Form History</h2>
-                    <p class="text-gray-600">Review and manage student form submissions under your supervision.</p>
-                </div>
-                <div class="mt-4 sm:mt-0 flex space-x-3">
-                    <button onclick="exportHistory()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors font-medium text-sm">
-                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Export
-                    </button>
-                    <button onclick="refreshHistory()" class="bg-kku-blue text-white px-4 py-2 rounded-md hover:bg-kku-blue-dark transition-colors font-medium text-sm">
-                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Refresh
-                    </button>
-                </div>
-            </div>
-        </div>
+  <!-- Hero -->
+  <section id="home" class="hero">
+    <h2>ทำงานกับเอกสารได้ง่ายกว่าเดิม</h2>
+    <p>ระบบจัดการฟอร์มดิจิทัลที่ครบวงจร สำหรับมหาวิทยาลัยขอนแก่น</p>
+    <a href="/users/register" class="btn-primary">เริ่มต้นใช้งาน</a>
+    <a href="#features" class="btn-secondary">เรียนรู้เพิ่มเติม</a>
+  </section>
 
-        <!-- Filters -->
-        <div class="filter-card">
-            <div class="flex flex-col lg:flex-row lg:items-end lg:space-x-4 space-y-4 lg:space-y-0">
-                <!-- Status Filter -->
-                <div class="flex-1">
-                    <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">
-                        Status
-                    </label>
-                    <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
-                        <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="under-review">Under Review</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                    </select>
-                </div>
+  <!-- Features -->
+  <section id="features">
+    <h2>คุณสมบัติเด่น</h2>
+    <div class="features">
+      <div class="feature-card">
+        <h3>ส่งแบบฟอร์ม</h3>
+        <p>แบบฟอร์มดิจิทัลที่ใช้งานง่าย ส่งคำร้องและเอกสารได้รวดเร็ว</p>
+      </div>
+      <div class="feature-card">
+        <h3>การตอบกลับอัจฉริยะ</h3>
+        <p>ติดตามสถานะการส่งเอกสาร และอัปเดตแบบเรียลไทม์</p>
+      </div>
+      <div class="feature-card">
+        <h3>การแจ้งเตือน</h3>
+        <p>รับการแจ้งเตือนสำคัญ เพื่อไม่พลาดกำหนดส่งและการอัปเดต</p>
+      </div>
+    </div>
+  </section>
 
-                <!-- Form Type Filter -->
-                <div class="flex-1">
-                    <label for="typeFilter" class="block text-sm font-medium text-gray-700 mb-2">
-                        Form Type
-                    </label>
-                    <select id="typeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
-                        <option value="">All Types</option>
-                        <option value="leave">Leave Request</option>
-                        <option value="evaluation">Course Evaluation</option>
-                        <option value="registration">Registration</option>
-                        <option value="research">Research Proposal</option>
-                        <option value="support">IT Support</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
+    <!-- About -->
+  <section id="about" style="background:#fff; padding:5rem 2rem;">
+    <h2 style="font-size:2rem; color:#003366; margin-bottom:2rem;">เกี่ยวกับ CP Mail</h2>
 
-                <!-- Date Range -->
-                <div class="flex-1">
-                    <label for="dateFrom" class="block text-sm font-medium text-gray-700 mb-2">
-                        From Date
-                    </label>
-                    <input type="date" id="dateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
-                </div>
-
-                <div class="flex-1">
-                    <label for="dateTo" class="block text-sm font-medium text-gray-700 mb-2">
-                        To Date
-                    </label>
-                    <input type="date" id="dateTo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
-                </div>
-
-                <!-- Search -->
-                <div class="flex-1">
-                    <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-2">
-                        Search Student
-                    </label>
-                    <input type="text" id="searchInput" placeholder="Search by student name..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-kku-blue focus:border-transparent">
-                </div>
-
-                <!-- Filter Buttons -->
-                <div class="flex space-x-2">
-                    <button onclick="applyFilters()" class="bg-kku-blue text-white px-6 py-2 rounded-md hover:bg-kku-blue-dark transition-colors font-medium">
-                        Apply
-                    </button>
-                    <button onclick="clearFilters()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors font-medium">
-                        Clear
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Summary Stats -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-lg shadow">
-                <div class="text-2xl font-bold text-gray-900" id="totalForms">24</div>
-                <div class="text-sm text-gray-600">Total Forms</div>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <div class="text-2xl font-bold text-yellow-600" id="pendingForms">8</div>
-                <div class="text-sm text-gray-600">Pending Review</div>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <div class="text-2xl font-bold text-green-600" id="approvedForms">12</div>
-                <div class="text-sm text-gray-600">Approved</div>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <div class="text-2xl font-bold text-red-600" id="rejectedForms">4</div>
-                <div class="text-sm text-gray-600">Rejected</div>
-            </div>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loadingState" class="hidden text-center py-8">
-            <div class="loading-spinner w-8 h-8 border-4 border-kku-blue border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p class="text-gray-600">Loading form history...</p>
-        </div>
-
-        <!-- Desktop Table -->
-        <div class="hidden md:block bg-white rounded-lg shadow overflow-hidden">
-            <div class="table-container overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Student
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Form Type
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Submission Date
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Priority
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
-                        <!-- Table rows will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Mobile Cards -->
-        <div id="mobileCards" class="md:hidden space-y-4">
-            <!-- Mobile cards will be populated here -->
-        </div>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="hidden text-center py-12">
-            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No forms found</h3>
-            <p class="text-gray-500 mb-4">No form submissions match your current filters.</p>
-            <button onclick="clearFilters()" class="bg-kku-blue text-white px-4 py-2 rounded-md hover:bg-kku-blue-dark transition-colors">
-                Clear Filters
-            </button>
-        </div>
-
-        <!-- Pagination -->
-        <div id="paginationContainer" class="flex items-center justify-between mt-6">
-            <div class="text-sm text-gray-700">
-                Showing <span id="showingFrom">1</span> to <span id="showingTo">10</span> of <span id="totalResults">24</span> results
-            </div>
-            <div class="flex space-x-2">
-                <button onclick="previousPage()" id="prevBtn" class="bg-gray-300 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    Previous
-                </button>
-                <button onclick="nextPage()" id="nextBtn" class="bg-kku-blue text-white px-3 py-2 rounded-md hover:bg-kku-blue-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    Next
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- Form Detail Modal -->
-    <div id="formDetailModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-gray-900" id="modalTitle">Form Details</h3>
-                <button onclick="closeFormModal()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <div id="modalContent" class="space-y-6">
-                <!-- Modal content will be populated here -->
-            </div>
-            
-            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
-                <button onclick="closeFormModal()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors font-medium">
-                    Close
-                </button>
-                <button id="approveBtn" onclick="approveForm()" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors font-medium">
-                    Approve
-                </button>
-                <button id="rejectBtn" onclick="showRejectModal()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors font-medium">
-                    Reject
-                </button>
-            </div>
-        </div>
+    <div style="display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:2rem; max-width:1200px; margin:0 auto;">
+      
+      <!-- ฝั่งข้อความ -->
+      <div style="flex:1; min-width:300px; text-align:left;">
+        <p style="font-size:1.1rem; line-height:1.8;">
+          <strong>CP Mail (FormEase)</strong> คือระบบการจัดการฟอร์มดิจิทัลของมหาวิทยาลัยขอนแก่น 
+          ที่พัฒนาขึ้นเพื่อช่วยให้นักศึกษา คณาจารย์ และเจ้าหน้าที่ 
+          สามารถส่ง ติดตาม และจัดเก็บเอกสารออนไลน์ได้อย่างสะดวก รวดเร็ว และปลอดภัย
+        </p>
+        <p style="font-size:1.1rem; line-height:1.8;">
+          ระบบนี้ถูกออกแบบมาเพื่อแก้ปัญหางานเอกสารที่ยุ่งยาก ลดขั้นตอนที่ซ้ำซ้อน 
+          และเพิ่มความโปร่งใสในการดำเนินงาน ทุกคำร้องถูกติดตามได้แบบเรียลไทม์ 
+          ช่วยให้ทุกฝ่ายมั่นใจได้ว่าเอกสารถูกดำเนินการอย่างถูกต้องและทันเวลา
+        </p>
+      </div>
     </div>
 
-    <!-- Reject Modal -->
-    <div id="rejectModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-60">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
-            <div class="text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Reject Form</h3>
-                <div class="mt-2">
-                    <label for="rejectReason" class="block text-sm font-medium text-gray-700 mb-2 text-left">
-                        Reason for rejection:
-                    </label>
-                    <textarea id="rejectReason" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please provide a reason for rejection..."></textarea>
-                </div>
-                <div class="flex justify-center space-x-3 mt-6">
-                    <button onclick="closeRejectModal()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors font-medium">
-                        Cancel
-                    </button>
-                    <button onclick="confirmReject()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors font-medium">
-                        Reject Form
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- Key Benefits -->
+    <div style="margin-top:3rem; display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap;">
+      <div style="background:#f5f7fa; padding:2rem; border-radius:12px; flex:1; min-width:250px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+        <h3 style="color:#007bff;"> ลดงานเอกสาร</h3>
+        <p>แปลงกระบวนการทั้งหมดให้อยู่ในรูปแบบดิจิทัล ลดการใช้กระดาษและขั้นตอนที่ซ้ำซ้อน</p>
+      </div>
+      <div style="background:#f5f7fa; padding:2rem; border-radius:12px; flex:1; min-width:250px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+        <h3 style="color:#007bff;"> ใช้งานง่าย</h3>
+        <p>ออกแบบมาให้ผู้ใช้ทุกกลุ่มสามารถใช้งานได้ทันที โดยไม่ต้องมีพื้นฐานทางเทคนิค</p>
+      </div>
+      <div style="background:#f5f7fa; padding:2rem; border-radius:12px; flex:1; min-width:250px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+        <h3 style="color:#007bff;"> เข้าถึงได้ทุกที่</h3>
+        <p>ใช้งานได้ทุกอุปกรณ์ ทั้งคอมพิวเตอร์ แท็บเล็ต และมือถือ รองรับการเรียนและการทำงานยุคใหม่</p>
+      </div>
     </div>
+  </section>
 
-    <script>
-        // Sample form history data - replace with API calls
-        let formHistory = [
-            {
-                id: 'F2024001',
-                studentName: 'John Smith',
-                studentId: '650610001',
-                formType: 'leave',
-                formTitle: 'Medical Leave Request',
-                submissionDate: '2024-01-24T10:30:00',
-                status: 'pending',
-                priority: 'high',
-                description: 'Request for medical leave due to surgery',
-                attachments: ['medical_certificate.pdf', 'doctor_note.pdf'],
-                feedback: ''
-            },
-            {
-                id: 'F2024002',
-                studentName: 'Jane Doe',
-                studentId: '650610002',
-                formType: 'evaluation',
-                formTitle: 'Course Evaluation - CS101',
-                submissionDate: '2024-01-23T14:15:00',
-                status: 'approved',
-                priority: 'medium',
-                description: 'Course evaluation for Introduction to Computer Science',
-                attachments: [],
-                feedback: 'Evaluation completed successfully'
-            },
-            {
-                id: 'F2024003',
-                studentName: 'Mike Johnson',
-                studentId: '650610003',
-                formType: 'registration',
-                formTitle: 'Late Registration Request',
-                submissionDate: '2024-01-22T09:45:00',
-                status: 'rejected',
-                priority: 'medium',
-                description: 'Request for late course registration',
-                attachments: ['transcript.pdf'],
-                feedback: 'Registration period has ended. Please contact academic office.'
-            },
-            {
-                id: 'F2024004',
-                studentName: 'Sarah Wilson',
-                studentId: '650610004',
-                formType: 'research',
-                formTitle: 'Research Proposal - AI Ethics',
-                submissionDate: '2024-01-21T16:20:00',
-                status: 'under-review',
-                priority: 'high',
-                description: 'Research proposal on AI ethics in healthcare',
-                attachments: ['proposal.pdf', 'literature_review.pdf'],
-                feedback: ''
-            },
-            {
-                id: 'F2024005',
-                studentName: 'David Brown',
-                studentId: '650610005',
-                formType: 'support',
-                formTitle: 'IT Support Request',
-                submissionDate: '2024-01-20T11:30:00',
-                status: 'approved',
-                priority: 'low',
-                description: 'Request for software installation assistance',
-                attachments: [],
-                feedback: 'Support ticket created and assigned'
-            }
-        ];
 
-        let filteredHistory = [...formHistory];
-        let currentPage = 1;
-        let itemsPerPage = 10;
-        let currentFormId = null;
+  <!-- Contact -->
+  <footer id="contact">
+    <p>© <%= new Date().getFullYear() %> CP Mail - วิทยาลับการคอมพิวเตอร์</p>
+    <p>ที่อยู่: 123 หมู่ 16 ถนนมิตรภาพ ต.ในเมือง อ.เมือง จ.ขอนแก่น 40002</p>
+    <p>โทร: 065-264-5163 | <a href="https://computing.kku.ac.th/index">วิทยาลัยการคอมพิวเตอร์</a></p>
+  </footer>
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            setupFilters();
-            renderHistory();
-            updateStats();
-        });
-
-        // Setup filter event listeners
-        function setupFilters() {
-            document.getElementById('statusFilter').addEventListener('change', applyFilters);
-            document.getElementById('typeFilter').addEventListener('change', applyFilters);
-            document.getElementById('dateFrom').addEventListener('change', applyFilters);
-            document.getElementById('dateTo').addEventListener('change', applyFilters);
-            document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
-        }
-
-        // Apply filters
-        function applyFilters() {
-            const statusFilter = document.getElementById('statusFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
-            const dateFrom = document.getElementById('dateFrom').value;
-            const dateTo = document.getElementById('dateTo').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-            filteredHistory = formHistory.filter(form => {
-                // Status filter
-                if (statusFilter && form.status !== statusFilter) return false;
-                
-                // Type filter
-                if (typeFilter && form.formType !== typeFilter) return false;
-                
-                // Date range filter
-                const submissionDate = new Date(form.submissionDate);
-                if (dateFrom && submissionDate < new Date(dateFrom)) return false;
-                if (dateTo && submissionDate > new Date(dateTo + 'T23:59:59')) return false;
-                
-                // Search filter
-                if (searchTerm && !form.studentName.toLowerCase().includes(searchTerm)) return false;
-                
-                return true;
-            });
-
-            currentPage = 1;
-            renderHistory();
-            updateStats();
-        }
-
-        // Clear all filters
-        function clearFilters() {
-            document.getElementById('statusFilter').value = '';
-            document.getElementById('typeFilter').value = '';
-            document.getElementById('dateFrom').value = '';
-            document.getElementById('dateTo').value = '';
-            document.getElementById('searchInput').value = '';
-            
-            filteredHistory = [...formHistory];
-            currentPage = 1;
-            renderHistory();
-            updateStats();
-        }
-
-        // Render form history
-        function renderHistory() {
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageData = filteredHistory.slice(startIndex, endIndex);
-
-            if (pageData.length === 0) {
-                showEmptyState();
-                return;
-            }
-
-            hideEmptyState();
-            renderDesktopTable(pageData);
-            renderMobileCards(pageData);
-            updatePagination();
-        }
-
-        // Render desktop table
-        function renderDesktopTable(data) {
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = data.map(form => `
-                <tr class="table-row" onclick="viewFormDetails('${form.id}')">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                    <span class="text-sm font-medium text-gray-700">${form.studentName.split(' ').map(n => n[0]).join('')}</span>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${form.studentName}</div>
-                                <div class="text-sm text-gray-500">${form.studentId}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="form-type-icon type-${form.formType} mr-3">
-                                ${getFormTypeIcon(form.formType)}
-                            </div>
-                            <div>
-                                <div class="text-sm font-medium text-gray-900">${form.formTitle}</div>
-                                <div class="text-sm text-gray-500 capitalize">${form.formType.replace('-', ' ')}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${formatDate(form.submissionDate)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge status-${form.status}">
-                            ${form.status.replace('-', ' ')}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityClass(form.priority)}">
-                            ${form.priority}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="event.stopPropagation(); viewFormDetails('${form.id}')" class="text-kku-blue hover:text-kku-blue-dark mr-3">
-                            View
-                        </button>
-                        ${form.status === 'pending' || form.status === 'under-review' ? `
-                            <button onclick="event.stopPropagation(); quickApprove('${form.id}')" class="text-green-600 hover:text-green-900 mr-3">
-                                Approve
-                            </button>
-                            <button onclick="event.stopPropagation(); quickReject('${form.id}')" class="text-red-600 hover:text-red-900">
-                                Reject
-                            </button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Render mobile cards
-        function renderMobileCards(data) {
-            const container = document.getElementById('mobileCards');
-            container.innerHTML = data.map(form => `
-                <div class="mobile-card" onclick="viewFormDetails('${form.id}')">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center">
-                            <div class="form-type-icon type-${form.formType} mr-3">
-                                ${getFormTypeIcon(form.formType)}
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-900">${form.studentName}</h4>
-                                <p class="text-sm text-gray-500">${form.studentId}</p>
-                            </div>
-                        </div>
-                        <span class="status-badge status-${form.status}">
-                            ${form.status.replace('-', ' ')}
-                        </span>
-                    </div>
-                    <div class="mb-3">
-                        <p class="font-medium text-gray-900">${form.formTitle}</p>
-                        <p class="text-sm text-gray-600">${form.description}</p>
-                    </div>
-                    <div class="flex items-center justify-between text-sm text-gray-500">
-                        <span>${formatDate(form.submissionDate)}</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityClass(form.priority)}">
-                            ${form.priority}
-                        </span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Get form type icon
-        function getFormTypeIcon(type) {
-            const icons = {
-                leave: 'L',
-                evaluation: 'E',
-                registration: 'R',
-                research: 'RS',
-                support: 'S',
-                other: 'O'
-            };
-            return icons[type] || 'F';
-        }
-
-        // Get priority class
-        function getPriorityClass(priority) {
-            const classes = {
-                high: 'bg-red-100 text-red-800',
-                medium: 'bg-yellow-100 text-yellow-800',
-                low: 'bg-green-100 text-green-800'
-            };
-            return classes[priority] || classes.medium;
-        }
-
-        // Format date
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        // Update statistics
-        function updateStats() {
-            document.getElementById('totalForms').textContent = filteredHistory.length;
-            document.getElementById('pendingForms').textContent = filteredHistory.filter(f => f.status === 'pending' || f.status === 'under-review').length;
-            document.getElementById('approvedForms').textContent = filteredHistory.filter(f => f.status === 'approved').length;
-            document.getElementById('rejectedForms').textContent = filteredHistory.filter(f => f.status === 'rejected').length;
-        }
-
-        // Show/hide empty state
-        function showEmptyState() {
-            document.getElementById('emptyState').classList.remove('hidden');
-            document.querySelector('.hidden.md\\:block').classList.add('hidden');
-            document.getElementById('mobileCards').classList.add('hidden');
-            document.getElementById('paginationContainer').classList.add('hidden');
-        }
-
-        function hideEmptyState() {
-            document.getElementById('emptyState').classList.add('hidden');
-            document.querySelector('.bg-white.rounded-lg.shadow.overflow-hidden').classList.remove('hidden');
-            document.getElementById('mobileCards').classList.remove('hidden');
-            document.getElementById('paginationContainer').classList.remove('hidden');
-        }
-
-        // Update pagination
-        function updatePagination() {
-            const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
-            const startIndex = (currentPage - 1) * itemsPerPage + 1;
-            const endIndex = Math.min(currentPage * itemsPerPage, filteredHistory.length);
-
-            document.getElementById('showingFrom').textContent = startIndex;
-            document.getElementById('showingTo').textContent = endIndex;
-            document.getElementById('totalResults').textContent = filteredHistory.length;
-
-            document.getElementById('prevBtn').disabled = currentPage === 1;
-            document.getElementById('nextBtn').disabled = currentPage === totalPages;
-        }
-
-        // Pagination functions
-        function previousPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderHistory();
-            }
-        }
-
-        function nextPage() {
-            const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderHistory();
-            }
-        }
-
-        // View form details
-        function viewFormDetails(formId) {
-            const form = formHistory.find(f => f.id === formId);
-            if (!form) return;
-
-            currentFormId = formId;
-            
-            document.getElementById('modalTitle').textContent = `${form.formTitle} - ${form.studentName}`;
-            
-            const modalContent = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <div>
-                            <h4 class="font-semibold text-gray-900 mb-2">Student Information</h4>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <p><span class="font-medium">Name:</span> ${form.studentName}</p>
-                                <p><span class="font-medium">Student ID:</span> ${form.studentId}</p>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h4 class="font-semibold text-gray-900 mb-2">Form Details</h4>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <p><span class="font-medium">Type:</span> ${form.formType.replace('-', ' ')}</p>
-                                <p><span class="font-medium">Title:</span> ${form.formTitle}</p>
-                                <p><span class="font-medium">Submitted:</span> ${formatDate(form.submissionDate)}</p>
-                                <p><span class="font-medium">Priority:</span> <span class="capitalize">${form.priority}</span></p>
-                                <p><span class="font-medium">Status:</span> <span class="status-badge status-${form.status}">${form.status.replace('-', ' ')}</span></p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <h4 class="font-semibold text-gray-900 mb-2">Description</h4>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <p class="text-gray-700">${form.description}</p>
-                            </div>
-                        </div>
-                        
-                        ${form.attachments.length > 0 ? `
-                            <div>
-                                <h4 class="font-semibold text-gray-900 mb-2">Attachments</h4>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    ${form.attachments.map(file => `
-                                        <div class="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
-                                            <span class="text-sm text-gray-700">${file}</span>
-                                            <button onclick="downloadFile('${file}')" class="text-kku-blue hover:text-kku-blue-dark text-sm">
-                                                Download
-                                            </button>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        
-                        ${form.feedback ? `
-                            <div>
-                                <h4 class="font-semibold text-gray-900 mb-2">Feedback</h4>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <p class="text-gray-700">${form.feedback}</p>
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('modalContent').innerHTML = modalContent;
-            
-            // Show/hide action buttons based on status
-            const approveBtn = document.getElementById('approveBtn');
-            const rejectBtn = document.getElementById('rejectBtn');
-            
-            if (form.status === 'pending' || form.status === 'under-review') {
-                approveBtn.style.display = 'inline-block';
-                rejectBtn.style.display = 'inline-block';
-            } else {
-                approveBtn.style.display = 'none';
-                rejectBtn.style.display = 'none';
-            }
-            
-            document.getElementById('formDetailModal').classList.remove('hidden');
-        }
-
-        // Close form modal
-        function closeFormModal() {
-            document.getElementById('formDetailModal').classList.add('hidden');
-            currentFormId = null;
-        }
-
-        // Show reject modal
-        function showRejectModal() {
-            document.getElementById('rejectModal').classList.remove('hidden');
-        }
-
-        // Close reject modal
-        function closeRejectModal() {
-            document.getElementById('rejectModal').classList.add('hidden');
-            document.getElementById('rejectReason').value = '';
-        }
-
-        // Quick approve
-        function quickApprove(formId) {
-            if (confirm('Are you sure you want to approve this form?')) {
-                approveFormAPI(formId);
-            }
-        }
-
-        // Quick reject
-        function quickReject(formId) {
-            currentFormId = formId;
-            showRejectModal();
-        }
-
-        // Approve form
-        function approveForm() {
-            if (currentFormId) {
-                approveFormAPI(currentFormId);
-                closeFormModal();
-            }
-        }
-
-        // Confirm reject
-        function confirmReject() {
-            const reason = document.getElementById('rejectReason').value.trim();
-            if (!reason) {
-                alert('Please provide a reason for rejection.');
-                return;
-            }
-            
-            if (currentFormId) {
-                rejectFormAPI(currentFormId, reason);
-                closeRejectModal();
-                closeFormModal();
-            }
-        }
-
-        // API simulation functions
-        async function approveFormAPI(formId) {
-            try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Update local data
-                const form = formHistory.find(f => f.id === formId);
-                if (form) {
-                    form.status = 'approved';
-                    form.feedback = 'Form approved by lecturer';
-                }
-                
-                // Re-render
-                applyFilters();
-                showMessage('Form approved successfully', 'success');
-            } catch (error) {
-                showMessage('Error approving form: ' + error.message, 'error');
-            }
-        }
-
-        async function rejectFormAPI(formId, reason) {
-            try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Update local data
-                const form = formHistory.find(f => f.id === formId);
-                if (form) {
-                    form.status = 'rejected';
-                    form.feedback = reason;
-                }
-                
-                // Re-render
-                applyFilters();
-                showMessage('Form rejected successfully', 'success');
-            } catch (error) {
-                showMessage('Error rejecting form: ' + error.message, 'error');
-            }
-        }
-
-        // Refresh history
-        async function refreshHistory() {
-            try {
-                showLoadingState(true);
-                
-                // Simulate API call
-                await fetchLecturerFormHistoryAPI();
-                
-                applyFilters();
-                showMessage('Form history refreshed successfully', 'success');
-            } catch (error) {
-                showMessage('Error refreshing history: ' + error.message, 'error');
-            } finally {
-                showLoadingState(false);
-            }
-        }
-
-        // Export history
-        function exportHistory() {
-            showMessage('Exporting form history...', 'info');
-            // Simulate export
-            setTimeout(() => {
-                showMessage('Form history exported successfully', 'success');
-            }, 2000);
-        }
-
-        // Download file
-        function downloadFile(filename) {
-            showMessage(`Downloading ${filename}...`, 'info');
-            // Simulate file download
-            setTimeout(() => {
-                showMessage(`${filename} downloaded successfully`, 'success');
-            }, 1000);
-        }
-
-        // Show loading state
-        function showLoadingState(show) {
-            const loadingState = document.getElementById('loadingState');
-            const tableContainer = document.querySelector('.bg-white.rounded-lg.shadow.overflow-hidden');
-            const mobileCards = document.getElementById('mobileCards');
-            
-            if (show) {
-                loadingState.classList.remove('hidden');
-                tableContainer.classList.add('hidden');
-                mobileCards.classList.add('hidden');
-            } else {
-                loadingState.classList.add('hidden');
-                tableContainer.classList.remove('hidden');
-                mobileCards.classList.remove('hidden');
-            }
-        }
-
-        // Show message
-        function showMessage(message, type) {
-            // Create and show a temporary message
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 p-4 rounded-md text-sm font-medium z-50 ${
-                type === 'success' ? 'bg-green-100 border border-green-200 text-green-800' :
-                type === 'error' ? 'bg-red-100 border border-red-200 text-red-800' :
-                'bg-blue-100 border border-blue-200 text-blue-800'
-            }`;
-            messageDiv.textContent = message;
-            
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                document.body.removeChild(messageDiv);
-            }, 3000);
-        }
-
-        // API simulation
-        async function fetchLecturerFormHistoryAPI() {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return formHistory;
-        }
-
-        // Utility function for debouncing
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        // Navigation functions
-        function goToDashboard() {
-            showMessage('Navigating to dashboard...', 'info');
-            setTimeout(() => alert('Going to Dashboard...'), 500);
-        }
-
-        function goToMyForms() {
-            showMessage('Navigating to forms...', 'info');
-            setTimeout(() => alert('Going to My Forms...'), 500);
-        }
-
-        function goToReports() {
-            showMessage('Navigating to reports...', 'info');
-            setTimeout(() => alert('Going to Reports...'), 500);
-        }
-
-        function goToProfile() {
-            showMessage('Navigating to profile...', 'info');
-            setTimeout(() => alert('Going to Profile...'), 500);
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                showMessage('Logging out...', 'info');
-                setTimeout(() => alert('Logged out successfully'), 1000);
-            }
-        }
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9886092475bfd334',t:'MTc1OTQyNzM1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
-
-

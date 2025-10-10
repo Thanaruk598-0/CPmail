@@ -5,11 +5,11 @@ var router = express.Router();
 router.get('/1', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
-router.get('/2', function(req, res, next) {
+router.get('/', function(req, res, next) {
   res.render('index_pro', { title: 'Express' });
 });
-router.get('/', function(req, res, next) {
-  res.redirect('/user/login');
-});
+// router.get('/', function(req, res, next) {
+//   res.redirect('/user/login');
+// });
 
 module.exports = router;

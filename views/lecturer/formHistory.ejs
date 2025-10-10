@@ -39,7 +39,7 @@
     </div>
 
     <!-- Filters -->
-    <div class="row mb-4">
+    <!-- <div class="row mb-4">
       <div class="col-12">
         <div class="filter-section">
           <form id="filterForm" method="GET" action="/lecturer/history">
@@ -82,7 +82,7 @@
           </form>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Stats Cards -->
     <div class="row mb-4">
@@ -169,7 +169,8 @@
                         </td>
                         <td>
                           <div class="d-flex gap-1 flex-wrap">
-                            <a href="/lecturer/forms/<%= form._id %>/view" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
+                            <a href="/lecturer/forms/<%= form._id %>/review" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
+
                             <% if (form.status === 'pending') { %>
                               <form method="POST" action="/lecturer/history/<%= form._id %>/approve" style="display: inline; margin: 0;">
                                 <button type="submit" class="btn btn-sm btn-success">อนุมัติ</button>
