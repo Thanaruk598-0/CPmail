@@ -1,0 +1,73 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary custom-navbar-primary py-1">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="https://images.seeklogo.com/logo-png/23/1/cp-logo-png_seeklogo-233400.png" alt="Avatar" class="rounded-circle me-2" style="width:40px;height:40px;">
+      <div>
+        <div>CPmail App</div>
+        <small class="text-white-50">Faculty of Computer Science</small>
+      </div>
+    </a>
+    <div class="ms-auto text-end d-flex align-items-center">
+      <% if (currentUser) { %>
+        <img src="<%= currentUser.avatarUrl ? currentUser.avatarUrl : 'https://via.placeholder.com/40' %>"
+             alt="Avatar" class="rounded-circle me-2" style="width:40px;height:40px;">
+        <div class="me-2">
+          <span class="d-block text-white"><%= currentUser.name %></span>
+          <span class="d-block text-white-50" style="font-size:12px;">
+             <%= currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) %>
+          </span>
+        </div>
+        <a class="btn btn-sm btn-light ms-2" href="/dashboard">Dashboard</a>
+        <a class="btn btn-sm btn-primary ms-1" href="/user/logout">Logout</a>
+      <% } else { %>
+        <a class="btn btn-sm btn-light ms-2" href="/user/login">Login</a>
+      <% } %>
+    </div>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-0 nav-secondary">
+  <div class="container-fluid">
+    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      <li class="nav-item">
+        <a class="nav-link <% if(activeMenu === 'dashboard'){ %>active<% } %>" href="/dashboard">Dashboard</a>
+      </li>
+      <li class="nav-item">
+         <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>" href="/users/profile/<%= currentUser ? currentUser._id : '' %>">Profile</a>
+      </li>
+      <% if (currentUser && currentUser.role === 'admin') { %>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>" href="/manageUser/list">User Management</a>
+        </li>
+      <% } %>
+      <% if (currentUser && currentUser.role === 'admin') { %>
+        <li class="nav-item">
+          <a class="nav-link <% if(activeMenu === 'email'){ %>active<% } %>" href="/emails/compose">Email Management</a>
+        </li>
+      <% } %>
+      <% if (currentUser && currentUser.role === 'admin') { %>
+        <li class="nav-item">
+        <a class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>" href="/manageCourse/list">Courses & Sections</a>
+      </li>
+      <% } %>
+      
+      <% if (currentUser && currentUser.role === 'admin') { %>
+  <li class="nav-item">
+    <a class="nav-link <% if(activeMenu === 'formTemplates'){ %>active<% } %>" href="/form-templates">Form Templates</a>
+  </li>
+<% } %>
+
+
+    </ul>
+  </div>
+</nav>
+
+<style>
+.custom-navbar-primary { min-height: 40px; }
+.nav-secondary .nav-link {
+  color: #183153; font-weight: 500; padding-right: 24px; padding-left: 24px;
+}
+.nav-secondary .nav-link.active, .nav-secondary .nav-link:hover {
+  color: #195ce8; border-bottom: 2px solid #195ce8; background: none;
+}
+</style>

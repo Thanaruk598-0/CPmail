@@ -11,6 +11,14 @@ const formSchema = new Schema({
   course: { type: Schema.Types.ObjectId, ref: "Course" },
   section: { type: Schema.Types.ObjectId, ref: "Section" },
   data: { type: Schema.Types.Mixed },
+
+  // ✅ เพิ่ม priority ตรงนี้
+  priority: { 
+    type: String, 
+    enum: ["high", "medium", "low"], 
+    default: "medium" 
+  },
+
   status: {
     type: String,
     enum: ["pending", "approved", "rejected", "cancelled"],
@@ -29,6 +37,6 @@ const formSchema = new Schema({
   cancellationReason: { type: String },
   submittedAt: { type: Date, default: Date.now },
   reviewedAt: { type: Date },
-});
+}, { timestamps: true }); // ✅ auto createdAt + updatedAt
 
 module.exports = mongoose.model("Form", formSchema);
