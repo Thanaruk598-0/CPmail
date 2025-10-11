@@ -5,6 +5,8 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
 
+const { Notification, User } = require("./models");
+
 // Test
 const session = require("express-session");
 
@@ -13,6 +15,7 @@ const authRouter = require("./routes/auth");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var studentRouter = require("./routes/studentRoute");
+var notificationsRouter = require("./routes/notifications");
 
 var app = express();
 
@@ -47,11 +50,33 @@ app.use(
   session({ secret: "formEaseSecret", resave: false, saveUninitialized: false })
 );
 
+app.use((req, res, next) => {
+  // ถ้า session มี user ก็ใช้ user นั้น ถ้าไม่มีก็เป็น undefined
+  res.locals.currentUser = req.session.user;
+  next();
+});
+
+// 🔔 GLOBAL notiCount (นับจาก Notification.read:false)
+app.use(async (req, res, next) => {
+  res.locals.notiCount = 0;           // default กันพัง
+  if (!req.session.user) return next();
+  try {
+    res.locals.notiCount = await Notification.countDocuments({
+      user: req.session.user._id,
+      read: false,
+    });
+  } catch (e) {
+    // เงียบๆ ไม่ให้พังเพจ
+  }
+  next();
+});
+
 // routers
 app.use("/", authRouter);
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/student", studentRouter);
+app.use("/", notificationsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

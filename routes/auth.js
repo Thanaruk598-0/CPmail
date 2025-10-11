@@ -4,13 +4,13 @@ const bcrypt = require("bcrypt");
 const { User } = require("../models");
 
 // Login page
-router.get("/login", (req, res) => {
+router.get("/user/login", (req, res) => {
   const { changed } = req.query; // จะเป็น '1' ถ้ามาจาก /login?changed=1
   res.render("login", { changed }); // ส่งไปให้ EJS
 });
 
 // Login submit
-router.post("/login", async (req, res) => {
+router.post("/user/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -37,9 +37,9 @@ router.post("/login", async (req, res) => {
 });
 
 // Logout
-router.get("/logout", (req, res) => {
+router.get("/user/logout", (req, res) => {
   req.session.destroy();
-  res.redirect("/login");
+  res.redirect("/user/login");
 });
 
 module.exports = router;

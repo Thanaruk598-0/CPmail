@@ -1,0 +1,214 @@
+<!-- Primary Navbar -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary custom-navbar-primary py-1">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="https://images.seeklogo.com/logo-png/23/1/cp-logo-png_seeklogo-233400.png" alt="Avatar"
+                class="rounded-circle me-2" style="width:40px;height:40px;">
+            <div>
+                <div>CPmail</div>
+                <small class="text-white-50">College of Computing</small>
+            </div>
+        </a>
+
+        <div class="ms-auto text-end d-flex align-items-center">
+
+            <a href="/notifications"
+                class="notification-icon position-relative d-inline-flex align-items-center justify-content-center me-4"
+                title="Notifications">
+                <i class="bi bi-bell"></i>
+                <% if (notiCount && notiCount> 0) { %>
+                    <span class="badge rounded-pill bg-danger noti-badge">
+                        <%= notiCount %>
+                    </span>
+                    <% } %>
+            </a>
+            
+            <% if (currentUser) { %>
+                <img src="<%= currentUser.avatarUrl ? currentUser.avatarUrl : 'https://via.placeholder.com/40' %>"
+                    alt="Avatar" class="rounded-circle me-2" style="width:40px;height:40px;">
+                <div class="me-2">
+                    <span class="d-block text-white fw-bold">
+                        <%= currentUser.name %>
+                    </span>
+                    <span class="d-block text-white-50" style="font-size:12px;">
+                        <%= currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) %>
+                    </span>
+                </div>
+                
+
+                <% if (currentUser.role==='admin' ) { %>
+                    <a class="btn btn-sm btn-light ms-2" href="/Dashboard/dashboard">แดชบอร์ดแอดมิน</a>
+                    <% } else if (currentUser.role==='lecturer' ) { %>
+                        <a class="btn btn-sm btn-light ms-2" href="/lectureDashboard/dashboard">แดชบอร์ดอาจารย์</a>
+                        <% } else if (currentUser.role==='student' ) { %>
+                            <a class="btn btn-sm btn-light ms-2" href="/student">แดชบอร์ดนักศึกษา</a>
+                            <% } %>
+
+                                <a class="btn btn-sm btn-primary ms-1" href="/user/logout">Logout</a>
+                                <% } else { %>
+                                    <a class="btn btn-sm btn-light ms-2" href="/user/login">Login</a>
+                                    <% } %>
+        </div>
+    </div>
+</nav>
+
+<!-- Secondary Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-0 nav-secondary">
+    <div class="container-fluid">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+            <% if (currentUser && currentUser.role==='admin' ) { %>
+                <li class="nav-item">
+                    <a class="nav-link <% if(activeMenu === 'adminDashboard'){ %>active<% } %>"
+                        href="/Dashboard/dashboard">แดชบอร์ดผู้ดูแลระบบ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>"
+                        href="/manageUser/list">จัดการผู้ใช้</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>"
+                        href="/manageCourse/list">จัดการรายวิชาและกลุ่มเรียน</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <% if(activeMenu === 'formTemplates'){ %>active<% } %>"
+                        href="/form-templates">จัดการเทมเพลตแบบฟอร์ม </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>"
+                        href="/users/profile/<%= currentUser._id %>">โปรไฟล์</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <% if(activeMenu === 'viewAllForm'){ %>active<% } %>"
+                        href="/ALLTEMPLAETES">ดูแบบฟอร์มทั้งหมด</a>
+                </li>
+                <% } %>
+
+
+
+                    <% if (currentUser && currentUser.role==='lecturer' ) { %>
+                        <li class="nav-item">
+                            <a class="nav-link <% if(activeMenu === 'lectureDashboard'){ %>active<% } %>"
+                                href="/lectureDashboard/dashboard">แดชบอร์ดอาจารย์</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <% if(activeMenu === 'reports'){ %>active<% } %>"
+                                href="/lecturer/reports">รายงาน</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <% if(activeMenu === 'formHistory'){ %>active<% } %>"
+                                href="/history/history">ประวัติฟอร์ม</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <% if(activeMenu==='profile'){ %>active<% } %>"
+                                href="/users/profile/<%= currentUser._id %>">โปรไฟล์อาจารย์</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= activeMenu === 'announcements' ? 'active' : '' %>"
+                                href="/lecturer/announcements">ประกาศ</a>
+                        </li>
+                        <% } %>
+
+                            <% if (currentUser && currentUser.role==='student' ) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link <% if(activeMenu === 'student'){ %>active<% } %>"
+                                        href="/student">แดชบอร์ดนักศึกษา</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link <% if(activeMenu === 'submit'){ %>active<% } %>"
+                                        href="/student/forms/submit">ยื่นแบบฟอร์ม</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link <% if(activeMenu === 'formhistory'){ %>active<% } %>"
+                                        href="/student/formhistory">แบบฟอร์มทั้งหมด</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>"
+                                        href="/student/profile">โปรไฟล์นักศึกษา</a>
+                                </li>
+                                <% } %>
+
+        </ul>
+    </div>
+</nav>
+
+<style>
+    .custom-navbar-primary {
+        min-height: 40px;
+        background-color: #0050a0 !important;
+        /* ฟ้าอ่อนลงจากเดิม */
+    }
+
+    .nav-secondary {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #dce3f0;
+    }
+
+    .nav-secondary .nav-link {
+        color: #003366;
+        font-weight: 500;
+        padding: 10px 20px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-secondary .nav-link.active,
+    .nav-secondary .nav-link:hover {
+        color: #195ce8;
+        border-bottom: 2px solid #195ce8;
+        background: none;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+        color: #ffffff;
+        transition: color 0.2s ease, transform 0.2s ease;
+        position: relative;
+    }
+
+    .notification-icon:hover {
+        color: #ffcc00;
+        /* เหลืองอ่อนตอน hover */
+        transform: scale(1.1);
+    }
+
+    .noti-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        font-size: 0.65rem;
+        min-width: 1.1rem;
+        height: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    .notification-icon:hover i {
+        transform: translateY(-1px);
+    }
+
+    .btn-primary {
+        background-color: #003366;
+        border-color: #003366;
+    }
+
+    .btn-primary:hover {
+        background-color: #195ce8;
+        border-color: #195ce8;
+    }
+
+    .btn-light {
+        color: #003366;
+        background-color: #f8f9fa;
+        border-color: #dce3f0;
+    }
+
+    .btn-light:hover {
+        background-color: #e2e8f0;
+    }
+</style>

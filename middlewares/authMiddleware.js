@@ -3,6 +3,6 @@ module.exports = (req, res, next) => {
     req.user = req.session.user;
     next();
   } else {
-    res.redirect("/login");
+    res.redirect("/user/login");
   }
 };
