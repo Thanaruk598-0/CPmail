@@ -13,7 +13,7 @@ const asArray = v => (Array.isArray(v) ? v : (v ? [v] : []));
 const aw = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 /* ================== PAGE: GET /lecturer/announcements ================== */
-router.get('/announcements', checkLecturer, aw(async (req, res) => {
+router.get('/', checkLecturer, aw(async (req, res) => {
   try {
     const userId = res.locals.currentUser?._id;
     if (!userId) {

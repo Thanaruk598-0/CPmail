@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const Form = require("../models/Form");
+const checkAdmin = require('../middleware/checkAdmin');
 
 // Mock currentUser (ถ้ายังไม่มีระบบ login จริง)
 const mockUser = {
@@ -12,7 +13,7 @@ const mockUser = {
 };
 
 // GET /viewtemplates
-router.get("/", async (req, res) => {
+router.get("/",checkAdmin, async (req, res) => {
   try {
     // ดึงข้อมูลฟอร์มทั้งหมด
     const forms = await Form.find()

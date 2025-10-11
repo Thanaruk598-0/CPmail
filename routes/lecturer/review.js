@@ -247,7 +247,7 @@ router.post('/forms/:id/feedback', async (req, res, next) => {
 
 
 /* ---- POST /lecturer/forms/:id/approve ---- */
-router.post('/forms/:id/approve', async (req, res, next) => {
+router.post('/history/:id/approve', async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!isObjId(id)) return res.status(400).json({ success: false, message: 'รหัสคำร้องไม่ถูกต้อง' });
@@ -263,7 +263,7 @@ router.post('/forms/:id/approve', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/forms/:id/reject', async (req, res, next) => {
+router.post('/history/:id/reject', async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!isObjId(id)) return res.status(400).json({ success: false, message: 'รหัสคำร้องไม่ถูกต้อง' });

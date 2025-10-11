@@ -53,8 +53,11 @@
               <label class="form-label">กลุ่มนักศึกษา</label>
               <select class="form-select" id="studentGroup">
                 <option value="All" <%= studentGroup === 'All' ? 'selected' : '' %>>ทั้งหมด</option>
-                <option value="CS Year 1" <%= studentGroup === 'CS Year 1' ? 'selected' : '' %>>CS ปี 1</option>
-                <!-- เพิ่มตัวเลือกกลุ่มตามข้อมูล -->
+                <% sections.forEach(section => { %>  <!-- ✅ Dynamic options จาก sections -->
+                  <option value="<%= section.name %>" <%= studentGroup === section.name ? 'selected' : '' %>>
+                    <%= section.course.name %> - Section <%= section.name %>
+                  </option>
+                <% }); %>
               </select>
             </div>
             <div class="col-md-3 d-flex align-items-end">

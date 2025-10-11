@@ -172,10 +172,10 @@
                             <a href="/lecturers/forms/<%= form._id %>/review" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
 
                             <% if (form.status === 'pending') { %>
-                              <form method="POST" action="/lecturer/history/<%= form._id %>/approve" style="display: inline; margin: 0;">
+                              <form method="POST" action="/lecturer/forms/<%= form._id %>/approve" style="display: inline; margin: 0;">
                                 <button type="submit" class="btn btn-sm btn-success">อนุมัติ</button>
                               </form>
-                              <form method="POST" action="/lecturer/history/<%= form._id %>/reject" style="display: inline; margin: 0;">
+                              <form method="POST" action="/lecturer/forms/<%= form._id %>/reject" style="display: inline; margin: 0;">
                                 <button type="submit" class="btn btn-sm btn-danger">ไม่อนุมัติ</button>
                               </form>
                             <% } %>

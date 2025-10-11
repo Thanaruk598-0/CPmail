@@ -17,7 +17,13 @@ router.post('/login', async (req, res) => {
     return res.render('login', { error: "รหัสผ่านผิด" });
   }
   req.session.userId = user._id;
+  req.session.role = user.role;
+
+  if (user.role === 'student') {
+      return res.redirect('/student');
+    } else {
     res.redirect(`/users/profile/${user._id}`);
+  }
 });
 
 // GET /user/logout

@@ -9,6 +9,7 @@ const detectUser = require("./middleware/detectUser");
 const mongoose = require("mongoose");
 var flash = require("connect-flash");
 
+const { Notification, User } = require("./models");
 
 var indexRouter = require('./routes/index');
 var usersRouters = require('./routes/users');
@@ -35,6 +36,12 @@ const reviewRouter = require('./routes/lecturer/review');
 //ef
 const formTemplateRoutes = require("./routes/formTemplates");
 const viewTemplatesRouter = require("./routes/viewtemplates");
+
+//notification
+var notificationsRouter = require("./routes/notifications");
+
+//student
+var studentRouter = require("./routes/studentRoute");
 
 
 var app = express();
@@ -70,6 +77,21 @@ app.use(session({
 app.use(detectUser);
 app.use(flash());
 
+// 🔔 GLOBAL notiCount (นับจาก Notification.read:false)
+app.use(async (req, res, next) => {
+  res.locals.notiCount = 0;           // default กันพัง
+  if (!req.session.user) return next();
+  try {
+    res.locals.notiCount = await Notification.countDocuments({
+      user: req.session.user._id,
+      read: false,
+    });
+  } catch (e) {
+    // เงียบๆ ไม่ให้พังเพจ
+  }
+  next();
+});
+
 // Router ตาม path ที่เลือก
 app.use('/', indexRouter);            // หน้าแรก
 app.use('/users', usersRouters);      // /users/*
@@ -79,18 +101,21 @@ app.use('/manageCourse', manageCourseRouter);
 
 app.use('/Dashboard', Dashboard);
 app.use('/lectureDashboard', lectureDashboard);
-app.use("/lecturer", lecturerReportRoutes);
+app.use("/lecturer/reports", lecturerReportRoutes);
 app.use("/history", lecturerRouter);
 
 
 app.use("/", authRoutes);
 
-app.use('/lecturer', announcements);
+app.use("/student", studentRouter);
+
+app.use('/lecturer/announcements', announcements);
 app.use('/lecturers', reviewRouter);
 
 app.use("/form-templates", formTemplateRoutes);
 
 app.use("/allteplaetes", viewTemplatesRouter);
+app.use("/", notificationsRouter);
 
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist'));
 app.use('/icons', express.static(__dirname + '/node_modules/bootstrap-icons/font'));

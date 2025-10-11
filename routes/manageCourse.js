@@ -165,55 +165,61 @@ router.get('/add-section', checkAdmin, async (req, res) => {
 // POST /manageCourse/add-section - บันทึก Section ใหม่
 router.post('/add-section', checkAdmin, async (req, res) => {
   try {
-    console.log('Req body add-section:', req.body); // Debug
+    const { name, course, maxStudents, room, 'lecturers[]': lecturersRaw, 'scheduleDay[]': scheduleDayRaw, 'scheduleStart[]': scheduleStartRaw, 'scheduleEnd[]': scheduleEndRaw } = req.body;
 
-    const { name, course, semester, maxStudents, room, 'lecturers[]': lecturersRaw, 'scheduleDay[]': scheduleDayRaw, 'scheduleStart[]': scheduleStartRaw, 'scheduleEnd[]': scheduleEndRaw } = req.body;
-    let parsedYear = parseInt(semester.split('/')[1]) || new Date().getFullYear();
+    // ดึง course เพื่อนำ semester
+    const courseDoc = await Course.findById(course);
+    if (!courseDoc) return res.status(404).send('ไม่พบรายวิชา');
+
+    const semester = courseDoc.semester; // ดึงจาก Course
+    const year = parseInt(semester.split('/')[1]) || new Date().getFullYear();
+
     let lecturers = processRawToArray(lecturersRaw);
     let scheduleDay = processRawToArray(scheduleDayRaw);
     let scheduleStart = processRawToArray(scheduleStartRaw);
     let scheduleEnd = processRawToArray(scheduleEndRaw);
+
     let scheduleString = '';
-    if (scheduleDay.length > 0 && scheduleStart.length > 0 && scheduleEnd.length > 0) {
+    if (scheduleDay.length && scheduleStart.length && scheduleEnd.length) {
       for (let i = 0; i < scheduleDay.length; i++) {
         if (scheduleDay[i] && scheduleStart[i] && scheduleEnd[i]) {
-          // Filter invalid time
-          if (scheduleStart[i] && scheduleEnd[i]) {
-            scheduleString += `${scheduleDay[i]} ${scheduleStart[i]}-${scheduleEnd[i]}, `;
-          }
+          scheduleString += `${scheduleDay[i]} ${scheduleStart[i]}-${scheduleEnd[i]}, `;
         }
       }
       scheduleString = scheduleString.slice(0, -2);
     }
 
     const section = new Section({ 
-      name, 
-      course, 
-      semester, 
-      year: parsedYear, 
+      name,
+      course,
+      semester, // จาก course
+      year,
       maxStudents: parseInt(maxStudents) || 50,
-      lecturers, // Array of string IDs – Mongoose converts to ObjectId
+      lecturers,
       schedule: scheduleString,
       room 
     });
 
-    section.markModified('lecturers'); // Force detect array changes
-
+    section.markModified('lecturers');
     await section.save();
 
-    // Validate lecturers
-    const validLecturers = await User.find({ _id: { $in: section.lecturers }, role: 'lecturer' });
-    if (validLecturers.length !== section.lecturers.length) {
-      return res.status(400).send('อาจารย์ที่เลือกไม่ถูกต้อง');
-    }
+    
+    await Course.findByIdAndUpdate(course, { $push: { sections: section._id } });
 
-    console.log('Saved section add:', section); // Debug
+    await Course.findByIdAndUpdate(course, {
+  $addToSet: {
+    sections: section._id,
+    lecturers: { $each: lecturers } 
+  }
+});
+
     res.redirect('/manageCourse/list?tab=sections');
   } catch (err) {
     console.error('Error in add-section:', err);
     res.status(500).send('เกิดข้อผิดพลาด');
   }
 });
+
 
 // GET /manageCourse/edit-section/:id - Form แก้ไข Section
 router.get('/edit-section/:id', checkAdmin, async (req, res) => {
@@ -255,51 +261,47 @@ router.get('/edit-section/:id', checkAdmin, async (req, res) => {
 // POST /manageCourse/edit-section/:id - อัปเดต Section
 router.post('/edit-section/:id', checkAdmin, async (req, res) => {
   try {
-    console.log('Req body edit-section:', req.body); // Debug
-
     const { name, course, semester, maxStudents, room, 'lecturers[]': lecturersRaw, 'scheduleDay[]': scheduleDayRaw, 'scheduleStart[]': scheduleStartRaw, 'scheduleEnd[]': scheduleEndRaw } = req.body;
     let parsedYear = parseInt(semester.split('/')[1]) || new Date().getFullYear();
     let lecturers = processRawToArray(lecturersRaw);
     let scheduleDay = processRawToArray(scheduleDayRaw);
     let scheduleStart = processRawToArray(scheduleStartRaw);
     let scheduleEnd = processRawToArray(scheduleEndRaw);
+
     let scheduleString = '';
-    if (scheduleDay.length > 0 && scheduleStart.length > 0 && scheduleEnd.length > 0) {
+    if (scheduleDay.length && scheduleStart.length && scheduleEnd.length) {
       for (let i = 0; i < scheduleDay.length; i++) {
         if (scheduleDay[i] && scheduleStart[i] && scheduleEnd[i]) {
-          if (scheduleStart[i] && scheduleEnd[i]) {
-            scheduleString += `${scheduleDay[i]} ${scheduleStart[i]}-${scheduleEnd[i]}, `;
-          }
+          scheduleString += `${scheduleDay[i]} ${scheduleStart[i]}-${scheduleEnd[i]}, `;
         }
       }
       scheduleString = scheduleString.slice(0, -2);
     }
 
-    // Load document instance for better tracking
     const section = await Section.findById(req.params.id);
     if (!section) return res.status(404).send('ไม่พบ Section');
 
-    // Update fields
+    // ตรวจสอบถ้าเปลี่ยน course
+    if (section.course.toString() !== course) {
+      // ลบจาก course เก่า
+      await Course.findByIdAndUpdate(section.course, { $pull: { sections: section._id } });
+      // เพิ่มใน course ใหม่
+      await Course.findByIdAndUpdate(course, { $push: { sections: section._id } });
+    }
+
+    // อัปเดตข้อมูล Section
     section.name = name;
     section.course = course;
     section.semester = semester;
     section.year = parsedYear;
     section.maxStudents = parseInt(maxStudents) || 50;
-    section.lecturers = lecturers; // Assign array
+    section.lecturers = lecturers;
     section.schedule = scheduleString;
     section.room = room;
 
-    section.markModified('lecturers'); // Force detect array changes
-
+    section.markModified('lecturers');
     await section.save();
 
-    // Validate lecturers
-    const validLecturers = await User.find({ _id: { $in: section.lecturers }, role: 'lecturer' });
-    if (validLecturers.length !== section.lecturers.length) {
-      return res.status(400).send('อาจารย์ที่เลือกไม่ถูกต้อง');
-    }
-
-    console.log('Updated section edit:', section); // Debug
     res.redirect('/manageCourse/list?tab=sections');
   } catch (err) {
     console.error('Error in edit-section:', err);
@@ -307,12 +309,21 @@ router.post('/edit-section/:id', checkAdmin, async (req, res) => {
   }
 });
 
-// POST /manageCourse/delete-section/:id - ลบ Section
+
 router.post('/delete-section/:id', checkAdmin, async (req, res) => {
   try {
+    const section = await Section.findById(req.params.id);
+    if (!section) return res.status(404).send('ไม่พบ Section');
+
+    
+    await Course.findByIdAndUpdate(section.course, { $pull: { sections: section._id } });
+
+    // ลบ Section
     await Section.findByIdAndDelete(req.params.id);
+
     res.redirect('/manageCourse/list?tab=sections');
   } catch (err) {
+    console.error('Error deleting section:', err);
     res.status(500).send('เกิดข้อผิดพลาด');
   }
 });

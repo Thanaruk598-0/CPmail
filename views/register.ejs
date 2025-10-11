@@ -7,7 +7,7 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #007bff, #00c6ff);
+      background: linear-gradient(135deg, #180f58, #88bddb);
       min-height: 100vh;
     }
 
@@ -69,23 +69,6 @@
       background: #e6b800;
     }
 
-    .register-container p {
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #333;
-    }
-
-    .register-container a {
-      color: #007bff;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .register-container a:hover {
-      text-decoration: underline;
-    }
-
     .alert {
       padding: 12px;
       border-radius: 6px;
@@ -126,13 +109,23 @@
       <label>Phone:</label>
       <input type="text" name="phone">
 
-      <label>Avatar URL:</label>
-      <input type="text" name="avatarUrl">
+      <label>รหัสนักศึกษา:</label>
+      <input type="text" name="studentId" required>
 
-      <label>Student ID:</label>
-      <input type="text" name="studentId">
+      <label>ชั้นปี:</label>
+      <input type="number" name="yearOfStudy" min="1" max="8" required>
 
-      
+      <label>สาขาวิชา:</label>
+      <select name="major" required>
+        <option value="">-- เลือกสาขา --</option>
+        <option value="วิทยาการคอมพิวเตอร์">วิทยาการคอมพิวเตอร์</option>
+        <option value="เทคโนโลยีสารสนเทศและนวัตกรรมอัจฉริยะ">เทคโนโลยีสารสนเทศและนวัตกรรมอัจฉริยะ</option>
+        <option value="ภูมิสารสนเทศศาสตร์">ภูมิสารสนเทศศาสตร์</option>
+        <option value="ปัญญาประดิษฐ์">ปัญญาประดิษฐ์</option>
+        <option value="ความมั่นคงปลอดภัยไซเบอร์">ความมั่นคงปลอดภัยไซเบอร์</option>
+      </select>
+
+      <input type="hidden" name="role" value="student">
 
       <label>Password:</label>
       <input type="password" name="password" required>

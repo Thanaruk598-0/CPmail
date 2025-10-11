@@ -62,7 +62,7 @@ router.post("/register", async (req, res) => {
     });
     await newUser.save();
 
-    res.send("✅ สมัครสมาชิกสำเร็จ! <a href='/login'>ไปที่ Login</a>");
+    res.redirect("/user/login");
   } catch (err) {
     console.error(err);
     res.send("❌ เกิดข้อผิดพลาดในการสมัคร โปรดลองอีกครั้ง");
