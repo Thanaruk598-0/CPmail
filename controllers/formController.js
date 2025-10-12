@@ -18,32 +18,23 @@ async function loadStudentFull(userId) {
 
 // เลือก reviewer จาก targetRoles ของ template
 async function getReviewerFor(tpl, courseDoc, sectionDoc) {
-    const targets = tpl?.targetRoles || [];
-
-    // รวมแอดมินทั้งหมด
+    // รวม admin ทั้งหมด
     const admins = await User.find({ role: "admin" }).select("_id").lean();
     const adminIds = admins.map(a => a._id);
 
     // หาอาจารย์จาก section ก่อน ถ้าไม่มีค่อยดูที่ course
-    let lecturerIds = [];
     if (sectionDoc?.lecturers?.length) {
-        lecturerIds = sectionDoc.lecturers.map(x => x._id ? x._id : x);
-    } else if (courseDoc?.lecturers?.length) {
-        lecturerIds = courseDoc.lecturers.map(x => x._id ? x._id : x);
+        const firstLecturer = sectionDoc.lecturers[0];
+        return firstLecturer._id ? firstLecturer._id : firstLecturer;
     }
 
-    // สร้างพูลผู้รับตาม targetRoles
-    let pool = [];
-    if (targets.includes("lecturer")) pool = pool.concat(lecturerIds);
-    if (targets.includes("admin")) pool = pool.concat(adminIds);
-
-    // ถ้าไม่มี targetRoles หรือไม่มีผู้รับในพูลเลย ให้ fallback = แอดมิน + อาจารย์ทั้งหมด
-    if (pool.length === 0) {
-        const allLecturers = await User.find({ role: "lecturer" }).select("_id").lean();
-        pool = adminIds.concat(allLecturers.map(l => l._id));
+    if (courseDoc?.lecturers?.length) {
+        const firstLecturer = courseDoc.lecturers[0];
+        return firstLecturer._id ? firstLecturer._id : firstLecturer;
     }
 
-    return pool.length ? pick(pool) : null;
+    // ถ้าไม่มีอาจารย์เลย → fallback ไปหา admin คนแรก
+    return adminIds.length ? adminIds[0] : null;
 }
 
 // ตรวจ role/สถานะของเทมเพลตก่อนใช้งาน
@@ -63,46 +54,60 @@ function canUseTemplate(tpl, userRole = "student") {
 // - เมื่อเลือก templateId แล้ว -> กด ถัดไป ไป STEP 2
 // ------------------------------
 async function getSubmitStep1(req, res) {
-    try {
-        const categories = await FormTemplate.distinct("category", { status: "Active" });
-        const selCategory = (req.query.category || "").trim();
-        const selTemplateId = (req.query.templateId || "").trim();
+  try {
+    const categories = await FormTemplate.distinct("category", { status: "Active" });
+    const selCategory = (req.query.category || "").trim();
+    const selTemplateId = (req.query.templateId || "").trim();
 
-        // ดึงลิสต์ฟอร์มตามหมวดหมู่ (Active เท่านั้น)
-        let templates = [];
-        if (selCategory) {
-            templates = await FormTemplate.find({ category: selCategory, status: "Active" })
-                .select("_id title description fields category targetRoles allowedRoles")
-                .lean();
-        }
+    // 🔹 Map ชื่อหมวดหมู่เป็นภาษาไทย
+    const categoryMap = {
+      Academic: "ด้านวิชาการ",
+      Administrative: "ด้านธุรการ",
+      Evaluation: "แบบประเมิน",
+      Request: "แบบคำร้อง",
+      Survey: "แบบสำรวจ"
+    };
 
-        // template ที่เลือก (เพื่อโชว์รายละเอียด + เอกสารที่ต้องใช้: field type=file)
-        let selectedTemplate = null;
-        let requiredDocs = [];
-        if (selTemplateId) {
-            selectedTemplate = await FormTemplate.findById(selTemplateId).lean();
-            if (selectedTemplate) {
-                const files = (selectedTemplate.fields || []).filter(f => f?.type === "file");
-                requiredDocs = files.map(f => ({
-                    label: f?.label || "ไฟล์แนบ",
-                    required: !!f?.required
-                }));
-            }
-        }
+    // 🔹 แปลงชื่อภาษาอังกฤษเป็นไทยก่อนส่งให้ view
+    const categoriesTh = categories.map(c => ({
+      value: c,
+      label: categoryMap[c] || c
+    }));
 
-        return res.render("student/selectform", {
-            categories,
-            selCategory,
-            templates,
-            selTemplateId,
-            selectedTemplate,
-            requiredDocs,
-            activeMenu: "submit",
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).render("error", { message: "Server Error", error: err });
+    let templates = [];
+    if (selCategory) {
+      templates = await FormTemplate.find({ category: selCategory, status: "Active" })
+        .select("_id title description fields category targetRoles allowedRoles")
+        .lean();
     }
+
+    let selectedTemplate = null;
+    let requiredDocs = [];
+    if (selTemplateId) {
+      selectedTemplate = await FormTemplate.findById(selTemplateId).lean();
+      if (selectedTemplate) {
+        const files = (selectedTemplate.fields || []).filter(f => f?.type === "file");
+        requiredDocs = files.map(f => ({
+          label: f?.label || "ไฟล์แนบ",
+          required: !!f?.required
+        }));
+      }
+    }
+
+    // 🔹 ใช้ categoriesTh แทน categories
+    return res.render("student/selectform", {
+      categories: categoriesTh,
+      selCategory,
+      templates,
+      selTemplateId,
+      selectedTemplate,
+      requiredDocs,
+      activeMenu: "submit",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).render("error", { message: "Server Error", error: err });
+  }
 }
 
 // ------------------------------

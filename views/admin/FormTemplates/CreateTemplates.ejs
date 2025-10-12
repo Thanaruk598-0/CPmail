@@ -77,7 +77,7 @@
                 <!-- Role Permissions -->
                 <div class="mb-3">
                   <label class="form-label fw-semibold">สิทธิ์ตามบทบาท</label><br>
-                  <% const roles=["Student","Lecturer","Staff","Administrator"]; %>
+                  <% const roles=["student","lecturer","admin"]; %>
                     <% roles.forEach(role=> { %>
                       <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="allowedRoles" value="<%= role %>"

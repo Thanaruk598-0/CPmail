@@ -78,9 +78,19 @@ const getProfile = async (req, res) => {
 // ------------------------------
 const updateAvatar = async (req, res) => {
   try {
+    console.log('DEBUG: updateAvatar start, req.user._id:', req.user?._id);  // เช็ค user
+    if (!req.user || !req.user._id) {
+      throw new Error('req.user or req.user._id is missing');
+    }
+
     const student = await User.findById(req.user._id);
+    console.log('DEBUG: student found:', student ? 'OK' : 'NULL');  // เช็ค findById
+    if (!student) {
+      throw new Error('Student not found');
+    }
 
     if (req.file) {
+      console.log('DEBUG: req.file exists, filename:', req.file.filename);  // เช็ค multer
       const oldAvatar = student.avatarUrl;
       student.avatarUrl = `/uploads/${req.file.filename}`;
 
@@ -91,28 +101,48 @@ const updateAvatar = async (req, res) => {
           "public",
           oldAvatar.replace(/^\//, "")
         );
+        console.log('DEBUG: Deleting old avatar path:', oldPath);  // เช็ค path
         fs.unlink(oldPath, (err) => {
-          if (err) console.log("⚠️ Failed to delete old avatar:", err);
+          if (err) console.log("⚠️ Failed to delete old avatar:", err.message || err);
         });
       }
       await student.save();
+      console.log('DEBUG: student.save() OK');  // เช็ค save
+
+      // ✅ Update req.user and session to reflect new avatar immediately (no restart needed)
+      req.user.avatarUrl = student.avatarUrl;
+      if (req.session.user) {
+        req.session.user.avatarUrl = student.avatarUrl;
+      }
+    } else {
+      console.log('DEBUG: No file uploaded');
     }
 
     const studentFull = await loadStudentFull(req.user._id);
-    const allCourses = await Course.find().populate("sections");
-    const canRegister = !(studentFull.courses && studentFull.courses.length > 0);
+    console.log('DEBUG: loadStudentFull OK');  // เช็ค populate
 
+    console.log('DEBUG: allCourses query start');
+    const allCourses = await Course.find().populate("sections");
+    console.log('DEBUG: allCourses OK, count:', allCourses.length);
+
+    console.log('DEBUG: canRegister calc');
+    const canRegister = !(studentFull.courses && studentFull.courses.length > 0);
+    console.log('DEBUG: canRegister:', canRegister);
+
+    console.log('DEBUG: res.render start');
     res.render("student/profile", {
       student: studentFull,
       allCourses,
       canRegister,
       message: "✅ Avatar updated successfully!",
+      error: null,  // <- เพิ่มบรรทัดนี้เพื่อแก้ ReferenceError ใน EJS
       activeMenu: "profile",
-      
+      cacheBuster: new Date().getTime(),  // <- เพิ่ม cacheBuster สำหรับ navbar img (ถ้าต้องการ fallback)
     });
+    console.log('DEBUG: res.render done');
   } catch (err) {
-    console.error(err);
-    res.status(500).send("❌ Failed to update avatar");
+    console.error('DEBUG: updateAvatar ERROR:', err.message, err.stack);  // เพิ่ม stack trace
+    res.status(500).send("❌ Failed to update avatar: " + err.message);  // ส่ง message ไป browser
   }
 };
 
@@ -627,7 +657,7 @@ module.exports = {
   changePassword,
   getFormHistory,
   getFormHistoryData,
-  getFormDetail,            // ✅
-  postUpdateForm,     // ✅
-  postCancelForm,           // ✅
+  getFormDetail,
+  postUpdateForm,
+  postCancelForm, 
 };

@@ -114,7 +114,7 @@ app.use('/lecturer/review', lecturerreview);
 app.use("/form-templates", formTemplateRoutes);
 
 app.use("/allteplaetes", viewTemplatesRouter);
-app.use("/", notificationsRouter);
+app.use("/", notificationsRouter);  
 
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist'));
 app.use('/icons', express.static(__dirname + '/node_modules/bootstrap-icons/font'));
