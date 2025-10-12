@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+const puppeteer = require("puppeteer-core");
 
 const {
   User,
@@ -582,7 +583,7 @@ const postUpdateForm = async (req, res) => {
     await form.save();
 
     // กลับไป path สั้น + ทำ replaceState ในหน้า EJS
-    return res.redirect(`/student/forms?id=${formId}&updated=1`, activeMenu = "formhistory");
+    return res.redirect(303, `/student/forms?id=${formId}&updated=1`);
   } catch (err) {
     console.error(err);
     return res.status(500).render("error", { message: "Server Error", error: err });
@@ -610,10 +611,93 @@ const postCancelForm = async (req, res) => {
     form.reviewUpdatedAt = new Date();
     await form.save();
 
-    return res.redirect(`/student/forms?id=${formId}&cancelled=1`, activeMenu = "formhistory");
+    return res.redirect(303, `/student/forms?id=${formId}&cancelled=1`);
   } catch (err) {
     console.error(err);
     return res.status(500).render("error", { message: "Server Error", error: err });
+  }
+};
+
+const resolveChromePath = () => {
+  // 1) ENV มาก่อน
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+
+  // 2) เดาง่ายๆ ตาม OS
+  const os = process.platform;
+  const candidates = [];
+  if (os === "win32") {
+    candidates.push(
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+    );
+  } else if (os === "darwin") {
+    candidates.push("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
+  } else {
+    candidates.push(
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser",
+      "/snap/bin/chromium"
+    );
+  }
+  const fs = require("fs");
+  for (const p of candidates) { try { if (fs.existsSync(p)) return p; } catch (_) { } }
+  return null;
+};
+
+const exportFormPdf = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+    const formId = req.params.id || req.query.id;
+    if (!formId) return res.status(400).send("Missing form id");
+
+    const form = await Form.findOne({ _id: formId, submitter: studentId })
+      .populate({ path: "template", select: "title category description fields" })
+      .populate({ path: "reviewers", select: "name email" })
+      .populate({ path: "course", select: "name courseId description credits semester" })
+      .populate({ path: "section", select: "name" })
+      .populate({ path: "submitter", select: "name email avatarUrl universityId major yearOfStudy" })
+      .lean();
+
+    if (!form) return res.status(404).render("error", { message: "Form not found", error: null });
+
+    const viewData = { form, useCleanPath: true, activeMenu: "formhistory", isPdf: true };
+    req.app.render("student/formdetail", viewData, async (err, html) => {
+      if (err) return res.status(500).send("Render error");
+
+      const baseUrl = `${req.protocol}://${req.get("host")}/`;
+      const htmlWithBase = html.replace(/<head>/i, `<head><base href="${baseUrl}">`);
+
+      const executablePath = resolveChromePath();
+      if (!executablePath) {
+        return res.status(500).send("ไม่พบ Chrome/Chromium ในระบบ: กรุณาติดตั้งหรือกำหนด CHROME_PATH");
+      }
+
+      const browser = await puppeteer.launch({
+        executablePath,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: true,
+      });
+      const page = await browser.newPage();
+      await page.setContent(htmlWithBase, { waitUntil: "networkidle0" });
+      await page.emulateMediaType("screen");
+
+      const pdf = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: { top: "12mm", right: "12mm", bottom: "16mm", left: "12mm" },
+      });
+      await browser.close();
+
+      const safeTitle = (form?.template?.title || "FormEase").replace(/[^\wก-๙\s-]+/g, "");
+      const filename = `${safeTitle}-${form._id}.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+      res.send(pdf);
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("PDF export failed");
   }
 };
 
@@ -626,7 +710,8 @@ module.exports = {
   changePassword,
   getFormHistory,
   getFormHistoryData,
-  getFormDetail,            // ✅
-  postUpdateForm,     // ✅
-  postCancelForm,           // ✅
+  getFormDetail,
+  postUpdateForm,
+  postCancelForm,
+  exportFormPdf
 };

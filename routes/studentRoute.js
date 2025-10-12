@@ -33,6 +33,8 @@ router.post("/forms/:id/update", authMiddleware, StudentController.postUpdateFor
 //ยกเลิกฟอร์ม
 router.post("/forms/:id/cancel", authMiddleware, StudentController.postCancelForm);
 
+router.get("/forms/:id/pdf", authMiddleware, StudentController.exportFormPdf);
+
 // ==============================
 // เส้นทาง “ยื่นฟอร์มใหม่” 3 สเตป
 // STEP 1: เลือกเทมเพลต

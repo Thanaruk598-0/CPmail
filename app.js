@@ -25,9 +25,7 @@ async function startServer() {
   try {
     await mongoose.connect(dbURI);
     console.log("MongoDB connected");
-    app.listen(4000, () => {
-      console.log("Server is running on http://localhost:4000");
-    });
+    console.log("Server is running on http://localhost:3000");
   } catch (err) {
     console.log(err);
   }
@@ -52,7 +50,7 @@ app.use(
 
 app.use((req, res, next) => {
   // ถ้า session มี user ก็ใช้ user นั้น ถ้าไม่มีก็เป็น undefined
-  res.locals.currentUser = req.session.user;
+  res.locals.currentUser = req.session.user || null;
   next();
 });
 

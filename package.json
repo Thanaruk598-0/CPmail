@@ -18,6 +18,7 @@
     "mongo": "^0.1.0",
     "mongoose": "^8.18.3",
     "morgan": "~1.9.1",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "puppeteer-core": "^24.24.0"
   }
 }

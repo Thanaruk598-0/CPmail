@@ -4,8 +4,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary custom-navbar-primary py-1">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
-            <img src="https://images.seeklogo.com/logo-png/23/1/cp-logo-png_seeklogo-233400.png" alt="Avatar"
-                class="rounded-circle me-2" style="width:40px;height:40px;">
+            <img src="/uploads/Image_25681011_224954_170.png" alt="University Logo" class="rounded-circle me-2"
+                style="width:40px;height:40px;">
             <div>
                 <div>CPmail</div>
                 <small class="text-white-50">College of Computing</small>
@@ -14,42 +14,45 @@
 
         <div class="ms-auto text-end d-flex align-items-center">
 
-            <a href="/notifications"
-                class="notification-icon position-relative d-inline-flex align-items-center justify-content-center me-4"
-                title="Notifications">
-                <i class="bi bi-bell"></i>
-                <% if (notiCount && notiCount> 0) { %>
-                    <span class="badge rounded-pill bg-danger noti-badge">
-                        <%= notiCount %>
-                    </span>
-                    <% } %>
-            </a>
-            
-            <% if (currentUser) { %>
-                <img src="<%= currentUser.avatarUrl ? currentUser.avatarUrl : 'https://via.placeholder.com/40' %>"
-                    alt="Avatar" class="rounded-circle me-2" style="width:40px;height:40px;">
-                <div class="me-2">
-                    <span class="d-block text-white fw-bold">
-                        <%= currentUser.name %>
-                    </span>
-                    <span class="d-block text-white-50" style="font-size:12px;">
-                        <%= currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) %>
-                    </span>
-                </div>
-                
+            <% if (currentUser && currentUser.role==='student' ) { %>
+                <a href="/notifications"
+                    class="notification-icon position-relative d-inline-flex align-items-center justify-content-center me-4"
+                    title="Notifications">
+                    <i class="bi bi-bell"></i>
+                    <% if (typeof notiCount !=='undefined' && Number(notiCount)> 0) { %>
+                        <span class="badge rounded-pill bg-danger noti-badge">
+                            <%= notiCount %>
+                        </span>
+                        <% } %>
+                </a>
+                <% } %>
 
-                <% if (currentUser.role==='admin' ) { %>
-                    <a class="btn btn-sm btn-light ms-2" href="/Dashboard/dashboard">แดชบอร์ดแอดมิน</a>
-                    <% } else if (currentUser.role==='lecturer' ) { %>
-                        <a class="btn btn-sm btn-light ms-2" href="/lectureDashboard/dashboard">แดชบอร์ดอาจารย์</a>
-                        <% } else if (currentUser.role==='student' ) { %>
-                            <a class="btn btn-sm btn-light ms-2" href="/student">แดชบอร์ดนักศึกษา</a>
-                            <% } %>
+                    <% if (currentUser) { %>
+                        <img src="<%= currentUser?.avatarUrl || '/uploads/68e94b181e74b2407d10a9b8_1760197888847.jpg' %>"
+                            alt="Avatar" class="rounded-circle me-2" style="width:40px;height:40px;">
+                        <div class="me-2">
+                            <span class="d-block text-white fw-bold">
+                                <%= currentUser.name %>
+                            </span>
+                            <span class="d-block text-white-50" style="font-size:12px;">
+                                <%= currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) %>
+                            </span>
+                        </div>
 
-                                <a class="btn btn-sm btn-primary ms-1" href="/user/logout">Logout</a>
-                                <% } else { %>
-                                    <a class="btn btn-sm btn-light ms-2" href="/user/login">Login</a>
+
+                        <% if (currentUser.role==='admin' ) { %>
+                            <a class="btn btn-sm btn-light ms-2" href="/Dashboard/dashboard">แดชบอร์ดแอดมิน</a>
+                            <% } else if (currentUser.role==='lecturer' ) { %>
+                                <a class="btn btn-sm btn-light ms-2"
+                                    href="/lectureDashboard/dashboard">แดชบอร์ดอาจารย์</a>
+                                <% } else if (currentUser.role==='student' ) { %>
+                                    <a class="btn btn-sm btn-light ms-2" href="/student">แดชบอร์ดนักศึกษา</a>
                                     <% } %>
+
+                                        <a class="btn btn-sm btn-primary ms-1" href="/user/logout">Logout</a>
+                                        <% } else { %>
+                                            <a class="btn btn-sm btn-light ms-2" href="/user/login">Login</a>
+                                            <% } %>
         </div>
     </div>
 </nav>
