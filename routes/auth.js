@@ -184,7 +184,7 @@ router.post("/forgot-password", async (req, res) => {
     await user.save();
 
     // สร้างลิงก์ reset
-    const resetUrl = `http://localhost:4000/reset-password/${token}`;
+    const resetUrl = `http://localhost:3000/reset-password/${token}`;
 
     // ส่งอีเมล
     await transporter.sendMail({

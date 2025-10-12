@@ -6,7 +6,7 @@
 <!-- Primary Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark custom-navbar-primary py-1">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="/">
+    <a class="navbar-brand d-flex align-items-center" href="">
       <img
         src="/logo.png"
         alt="Avatar"
@@ -74,119 +74,124 @@
 </nav>
 
 <!-- Secondary Navbar -->
+<!-- Secondary Navbar -->
 <nav
   class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-0 nav-secondary"
 >
   <div class="container-fluid">
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
       <% if (currentUser && currentUser.role === 'admin') { %>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'adminDashboard'){ %>active<% } %>"
-          href="/Dashboard/dashboard"
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'adminDashboard'){ %>active<% } %>"
+            href="/Dashboard/dashboard"
           >แดชบอร์ดผู้ดูแลระบบ</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>"
-          href="/manageUser/list"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'manageUser'){ %>active<% } %>"
+            href="/manageUser/list"
           >จัดการผู้ใช้</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>"
-          href="/manageCourse/list"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'manageCourse'){ %>active<% } %>"
+            href="/manageCourse/list"
           >จัดการรายวิชาและกลุ่มเรียน</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'formTemplates'){ %>active<% } %>"
-          href="/form-templates"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'formTemplates'){ %>active<% } %>"
+            href="/form-templates"
           >จัดการเทมเพลตแบบฟอร์ม</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>"
-          href="/users/profile/<%= currentUser._id %>"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>"
+            href="/users/profile/<%= currentUser._id %>"
           >โปรไฟล์</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'viewAllForm'){ %>active<% } %>"
-          href="/allteplaetes"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'viewAllForm'){ %>active<% } %>"
+            href="/allteplaetes"
           >ดูแบบฟอร์มทั้งหมด</a
-        >
-      </li>
-      <% } else if (currentUser && currentUser.role === 'lecturer') { %>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'lectureDashboard'){ %>active<% } %>"
-          href="/lectureDashboard/dashboard"
+          >
+        </li>
+      <% } %>
+
+      <% if (currentUser && currentUser.role === 'lecturer') { %>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'lectureDashboard'){ %>active<% } %>"
+            href="/lectureDashboard/dashboard"
           >แดชบอร์ดอาจารย์</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'reports'){ %>active<% } %>"
-          href="/lecturer/reports"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'reports'){ %>active<% } %>"
+            href="/lecturer/reports"
           >รายงาน</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'formHistory'){ %>active<% } %>"
-          href="/lecturer/history"
-        >ประวัติฟอร์ม</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu==='profile'){ %>active<% } %>"
-          href="/users/profile/<%= currentUser._id %>"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'formHistory'){ %>active<% } %>"
+            href="/lecturer/history"
+          >ประวัติฟอร์ม</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu==='profile'){ %>active<% } %>"
+            href="/users/profile/<%= currentUser._id %>"
           >โปรไฟล์อาจารย์</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <%= activeMenu === 'announcements' ? 'active' : '' %>"
-          href="/lecturer/announcements"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= activeMenu === 'announcements' ? 'active' : '' %>"
+            href="/lecturer/announcements"
           >ประกาศ</a
-        >
-      </li>
-      <% } else if (currentUser && currentUser.role === 'student') { %>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'student'){ %>active<% } %>"
-          href="/student"
+          >
+        </li>
+      <% } %>
+
+      <% if (currentUser && currentUser.role === 'student') { %>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'student'){ %>active<% } %>"
+            href="/student"
           >แดชบอร์ดนักศึกษา</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'submit'){ %>active<% } %>"
-          href="/student/forms/submit"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'submit'){ %>active<% } %>"
+            href="/student/forms/submit"
           >ยื่นแบบฟอร์ม</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'formhistory'){ %>active<% } %>"
-          href="/student/formhistory"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'formhistory'){ %>active<% } %>"
+            href="/student/formhistory"
           >แบบฟอร์มทั้งหมด</a
-        >
-      </li>
-      <li class="nav-item">
-        <a
-          class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>"
-          href="/student/profile"
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <% if(activeMenu === 'profile'){ %>active<% } %>"
+            href="/student/profile"
           >โปรไฟล์นักศึกษา</a
-        >
-      </li>
+          >
+        </li>
       <% } %>
     </ul>
   </div>

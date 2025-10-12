@@ -30,7 +30,8 @@ router.get("/", checkAdmin, async (req, res) => {
       query: req.query,
       page,
       totalPages,
-      currentUser: req.session.user  // ✅ ใช้ session
+      currentUser: req.session.user,  // ✅ ใช้ session
+      activeMenu: 'viewAllForm'  // ✅ เพิ่มเพื่อ active nav
     });
   } catch (err) {
     console.error(err);
@@ -38,17 +39,18 @@ router.get("/", checkAdmin, async (req, res) => {
   }
 });
 
-router.get("/view/:id", async (req, res) => {
+router.get("/view/:id", checkAdmin, async (req, res) => {  // เพิ่ม checkAdmin
   try {
     const form = await Form.findById(req.params.id)
-      .populate("template")
-      .populate("submitter")
-      .populate("reviewers");
+      .populate("template", "title description category status")  // ✅ Specify fields to populate
+      .populate("submitter", "name email universityId major yearOfStudy avatarUrl")
+      .populate("reviewers", "name email role avatarUrl");
     if (!form) return res.status(404).send("Form not found");
 
     res.render("admin/Forms/viewform", {
       form,
       currentUser: req.session.user || null,  // ✅ ใช้ session
+      activeMenu: 'viewAllForm'  // ✅ เพิ่ม
     });
   } catch (err) {
     console.error(err);
@@ -57,7 +59,7 @@ router.get("/view/:id", async (req, res) => {
 });
 
 // 👉 อนุมัติฟอร์ม
-router.post("/:id/approve", async (req, res) => {
+router.post("/:id/approve", checkAdmin, async (req, res) => {  // เพิ่ม checkAdmin
   try {
     const form = await Form.findByIdAndUpdate(
       req.params.id,
@@ -65,7 +67,7 @@ router.post("/:id/approve", async (req, res) => {
       { new: true }
     );
     if (!form) return res.status(404).send("Form not found");
-    res.redirect("/allteplaetes"); // กลับไปหน้ารวม
+    res.redirect("/viewtemplates"); // กลับไปหน้ารวม
   } catch (err) {
     console.error(err);
     res.status(500).send("Error approving form");
@@ -73,7 +75,7 @@ router.post("/:id/approve", async (req, res) => {
 });
 
 // 👉 ปฏิเสธฟอร์ม
-router.post("/:id/reject", async (req, res) => {
+router.post("/:id/reject", checkAdmin, async (req, res) => {  // เพิ่ม checkAdmin
   try {
     const form = await Form.findByIdAndUpdate(
       req.params.id,
@@ -81,7 +83,7 @@ router.post("/:id/reject", async (req, res) => {
       { new: true }
     );
     if (!form) return res.status(404).send("Form not found");
-    res.redirect("/allteplaetes"); // กลับไปหน้ารวม
+    res.redirect("/viewtemplates"); // กลับไปหน้ารวม
   } catch (err) {
     console.error(err);
     res.status(500).send("Error rejecting form");

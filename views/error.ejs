@@ -1,4 +1,99 @@
-<h1><%= message %></h1>
-<h2><%= error?.status || '' %></h2>
-<pre><%= error?.stack || '' %></pre>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - CP mail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'kku-blue': '#1e40af',
+            'kku-blue-light': '#3b82f6',
+            'kku-blue-dark': '#1e3a8a',
+            'kku-gold': '#f59e0b',
+            'kku-gold-light': '#fbbf24'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { box-sizing: border-box; }
+    .error-container { min-height: calc(100vh - 80px); display: flex; align-items: center; justify-content: center; }
+    .floating-animation { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+    .fade-in { animation: fadeIn .8s ease-out; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+    .bounce-in { animation: bounceIn 1s ease-out; }
+    @keyframes bounceIn {
+      0% {transform:scale(0.3);opacity:0;} 50%{transform:scale(1.05);}70%{transform:scale(0.9);}
+      100%{transform:scale(1);opacity:1;}
+    }
+    .secondary-button { border:2px solid #1e40af; color:#1e40af; transition:all .3s ease; }
+    .secondary-button:hover { background:#1e40af; color:white; transform:translateY(-2px); }
+    .error-code { background:linear-gradient(135deg,#1e40af,#3b82f6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <!-- Error Content -->
+  <div class="error-container">
+    <div id="error404" class="text-center max-w-2xl mx-auto px-4 fade-in">
+      <h1 class="text-6xl font-bold error-code mb-4">404</h1>
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">ไม่พบหน้า !</h2>
+
+      <div class="flex justify-center">
+        <button onclick="goBack()" class="secondary-button bg-white px-8 py-3 rounded-lg font-semibold text-lg flex items-center justify-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          ย้อนกลับ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-gray-900 text-white py-6 mt-auto">
+    <div class="text-center text-gray-400 text-sm">© 2025 CP Mail - Khon Kaen University</div>
+  </footer>
+
+  <script>
+    
+    const sessionUser = "<%= typeof user !== 'undefined' ? user.name : '' %>";
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (sessionUser) {
+        console.log("Logged in as:", sessionUser);
+      } else {
+        console.warn("No user session found");
+      }
+    });
+
+    
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        showMessage('No previous page found.', 'info');
+      }
+    }
+
+    function showMessage(message, type) {
+      const div = document.createElement('div');
+      div.className = `fixed top-4 right-4 p-3 rounded-md text-sm z-50 ${
+        type === 'success' ? 'bg-green-100 text-green-700' :
+        type === 'error' ? 'bg-red-100 text-red-700' :
+        'bg-blue-100 text-blue-700'
+      }`;
+      div.textContent = message;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 2000);
+    }
+  </script>
+</body>
+</html>
 
