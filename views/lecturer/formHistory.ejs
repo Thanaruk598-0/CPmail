@@ -18,6 +18,7 @@
     .btn-group-vertical .btn { margin-bottom: 2px; }
     @media (max-width: 768px) { .actions-col { width: 100%; } .btn-sm { width: 100%; display: block; margin-bottom: 4px !important; margin-right: 0 !important; } }
     .pagination { justify-content: center; margin-top: 20px; }
+    .no-forms-msg { text-align: center; padding: 40px; color: #6c757d; }
   </style>
 </head>
 <body class="bg-light">
@@ -30,10 +31,7 @@
       <div class="col-12 d-flex justify-content-between align-items-center">
         <div>
           <h1 class="h3 mb-1">ประวัติการส่งแบบฟอร์ม</h1>
-          <p class="text-muted mb-0">ตรวจสอบและบริหารจัดการการส่งแบบฟอร์มของนักศึกษาที่อยู่ในความดูแลของคุณ</p>
-        </div>
-        <div>
-          
+          <p class="text-muted mb-0">ตรวจสอบและบริหารจัดการการส่งแบบฟอร์มของนักศึกษาที่ส่งมาหาคุณ</p>
         </div>
       </div>
     </div>
@@ -91,7 +89,7 @@
           <div class="card-body">
             <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
             <h2><%= totalForms %></h2>
-            <p class="mb-0">จำนวนฟอร์มทั้งหมด</p>
+            <p class="mb-0">จำนวนฟอร์มทั้งหมด (ของคุณ)</p>
           </div>
         </div>
       </div>
@@ -109,7 +107,7 @@
           <div class="card-body">
             <i class="fas fa-check fa-2x text-success mb-2"></i>
             <h2><%= approved %></h2>
-            <p class="mb-0">อนุมัติ</p>
+            <p class="mb-0">อนุมัติ (โดยคุณ)</p>
           </div>
         </div>
       </div>
@@ -118,7 +116,7 @@
           <div class="card-body">
             <i class="fas fa-times fa-2x text-danger mb-2"></i>
             <h2><%= rejected %></h2>
-            <p class="mb-0">ไม่อนุมัติ</p>
+            <p class="mb-0">ไม่อนุมัติ (โดยคุณ)</p>
           </div>
         </div>
       </div>
@@ -164,34 +162,32 @@
                         </td>
                         <td>
                           <span class="status-badge <%= form.status === 'approved' ? 'bg-success' : form.status === 'pending' ? 'bg-warning' : form.status === 'rejected' ? 'bg-danger' : 'bg-secondary' %> text-white">
-                            <% if(form.status === 'approved'){ %> อนุมัติ <% } else if(form.status === 'pending'){ %> รอตรวจสอบ <% } else if(form.status === 'rejected'){ %> ไม่อนุมัติ <% } else if(form.status === 'under review'){ %> กำลังตรวจสอบ <% } else { %> - <% } %>
+                            <% if(form.status === 'approved'){ %> อนุมัติ <% } else if(form.status === 'pending'){ %> รอตรวจสอบ <% } else if(form.status === 'rejected'){ %> ไม่อนุมัติ <% } else { %> - <% } %>
                           </span>
                         </td>
                         <td>
                           <div class="d-flex gap-1 flex-wrap">
-                            <a href="/lecturers/forms/<%= form._id %>/review" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>
-
-                            <% if (form.status === 'pending') { %>
-                              <form method="POST" action="/lecturer/forms/<%= form._id %>/approve" style="display: inline; margin: 0;">
-                                <button type="submit" class="btn btn-sm btn-success">อนุมัติ</button>
-                              </form>
-                              <form method="POST" action="/lecturer/forms/<%= form._id %>/reject" style="display: inline; margin: 0;">
-                                <button type="submit" class="btn btn-sm btn-danger">ไม่อนุมัติ</button>
-                              </form>
-                            <% } %>
+                            <a href="/lecturer/review/forms/<%= form._id %>/review" class="btn btn-sm btn-outline-primary">ดูรายละเอียด</a>  <!-- เปลี่ยน path: /review/forms/:id/review -->
+                            <!-- ไม่มี approve/reject inline แล้ว (ตามที่คุณลบ) -->
                           </div>
                         </td>
                       </tr>
                     <% }); %>
                   <% } else { %>
                     <tr>
-                      <td colspan="5" class="text-center text-muted py-4">ไม่พบข้อมูลฟอร์ม</td>
+                      <td colspan="5">
+                        <div class="no-forms-msg">
+                          <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                          <h5>ไม่พบฟอร์มที่ส่งมาหาคุณ</h5>
+                          <p class="mb-0">ลองปรับตัวกรองหรือตรวจสอบว่ามีฟอร์มรอตรวจสอบในรายวิชาของคุณ</p>
+                        </div>
+                      </td>
                     </tr>
                   <% } %>
                 </tbody>
               </table>
             </div>
-            <!-- Pagination -->
+            <!-- Pagination (mock) -->
             <nav aria-label="Form pagination">
               <ul class="pagination">
                 <li class="page-item disabled"><a class="page-link" href="#">ก่อนหน้า</a></li>
@@ -204,12 +200,6 @@
       </div>
     </div>
   </div>
-
-  <script>
-    function exportToCSV() {
-      alert('ฟังก์ชันส่งออก - ดาวน์โหลดเป็น CSV (ควรพัฒนาเพิ่มเติม)');
-    }
-  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

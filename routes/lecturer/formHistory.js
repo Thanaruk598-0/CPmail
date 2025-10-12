@@ -12,8 +12,8 @@ async function getLecturerSections(lecturerId) {
   return sections.map(s => s._id);
 }
 
-// GET /history (main list)
-router.get('/history', checkLecturer, async (req, res) => {
+// GET / (main list)
+router.get('/', checkLecturer, async (req, res) => {
   try {
     const lecturerId = req.user._id;
     const sectionIds = await getLecturerSections(lecturerId);
@@ -36,29 +36,47 @@ router.get('/history', checkLecturer, async (req, res) => {
       });
     }
 
-    // Filters from query params (default empty for all)
+    // Filters from query params
     const statusFilter = req.query.status || 'All Statuses';
     const formTypeFilter = req.query.formType || 'All Types';
     const fromDate = req.query.fromDate || '';
     const toDate = req.query.toDate || '';
     const searchStudent = req.query.searchStudent ? req.query.searchStudent.trim() : '';
 
-    let matchQuery = { section: { $in: sectionIds } };
+    // Base matchQuery: $or for pending in my sections OR reviewed by me
+    let baseMatchQuery = {
+      $or: [
+        { section: { $in: sectionIds }, status: 'pending' },
+        { reviewers: lecturerId }
+      ]
+    };
 
-    // Status filter
+    let matchQuery = { ...baseMatchQuery };
+
+    // Status filter (apply to both parts)
     if (statusFilter !== 'All Statuses') {
       const statusMap = {
         'Pending': 'pending',
-        'Under Review': 'pending', // Assume same as pending
+        'Under Review': 'pending',
         'Approved': 'approved',
         'Rejected': 'rejected'
       };
-      matchQuery.status = statusMap[statusFilter];
+      const targetStatus = statusMap[statusFilter];
+      matchQuery.$or[0].status = targetStatus; // For pending part, only if pending
+      matchQuery.$or[1].status = targetStatus; // For reviewed part
+      if (targetStatus === 'pending') {
+        delete matchQuery.$or[1]; // If pending, only show from sections (not reviewed)
+      }
     }
 
     // Date filter
-    if (fromDate) matchQuery.createdAt = { ...matchQuery.createdAt, $gte: new Date(fromDate) };
-    if (toDate) matchQuery.createdAt = { ...matchQuery.createdAt, $lte: new Date(toDate) };
+    if (fromDate || toDate) {
+      const dateFilter = {};
+      if (fromDate) dateFilter.$gte = new Date(fromDate);
+      if (toDate) dateFilter.$lte = new Date(toDate + 'T23:59:59.999Z');
+      matchQuery.$or[0].createdAt = dateFilter;
+      matchQuery.$or[1].createdAt = dateFilter;
+    }
 
     // Student search filter
     if (searchStudent) {
@@ -66,31 +84,37 @@ router.get('/history', checkLecturer, async (req, res) => {
         name: { $regex: searchStudent, $options: 'i' }
       }).select('_id');
       if (students.length > 0) {
-        matchQuery.submitter = { $in: students.map(s => s._id) };
+        const submitterFilter = { $in: students.map(s => s._id) };
+        matchQuery.$or[0].submitter = submitterFilter;
+        matchQuery.$or[1].submitter = submitterFilter;
       } else {
-        matchQuery.submitter = null; // ไม่มีนักศึกษาที่ตรง → คืนผลลัพธ์ว่าง
+        // No students match → empty results
+        matchQuery.$or[0].submitter = { $in: [] };
+        matchQuery.$or[1].submitter = { $in: [] };
       }
     }
 
     // Fetch forms with populate
     let forms = await Form.find(matchQuery)
       .sort({ createdAt: -1 })
-      .limit(50) // Basic limit for pagination
+      .limit(50)
       .populate('submitter', 'name universityId avatarUrl')
       .populate('template', 'title fields');
 
-    // Apply client-side filters if needed (for form type)
+    // Client-side formType filter
     if (formTypeFilter !== 'All Types') {
       forms = forms.filter(form => form.template?.title === formTypeFilter);
     }
 
-    // Stats (overall, not filtered)
-    const totalForms = await Form.countDocuments({ section: { $in: sectionIds } });
-    const pendingReview = await Form.countDocuments({ section: { $in: sectionIds }, status: 'pending' });
-    const approved = await Form.countDocuments({ section: { $in: sectionIds }, status: 'approved' });
-    const rejected = await Form.countDocuments({ section: { $in: sectionIds }, status: 'rejected' });
+    // Stats: Adjusted for lecturer-specific (pending in sections + reviewed by me)
+    const pendingMatch = { section: { $in: sectionIds }, status: 'pending' };
+    const reviewedMatch = { reviewers: lecturerId };
+    const totalForms = await Form.countDocuments({ $or: [pendingMatch, reviewedMatch] });
+    const pendingReview = await Form.countDocuments(pendingMatch);
+    const approved = await Form.countDocuments({ ...reviewedMatch, status: 'approved' });
+    const rejected = await Form.countDocuments({ ...reviewedMatch, status: 'rejected' });
 
-    // Unique form types
+    // Unique form types (from forms in sections)
     const uniqueFormTypes = await FormTemplate.aggregate([
       {
         $lookup: {
@@ -108,9 +132,11 @@ router.get('/history', checkLecturer, async (req, res) => {
     ]);
     const formTypesList = ['All Types', ...uniqueFormTypes.map(t => t.title)];
 
-    // Mock priority (add to model if needed)
+    // Mock priority if not set
     forms.forEach(form => {
-      form.priority = Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
+      if (!form.priority) {
+        form.priority = Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
+      }
     });
 
     res.render('lecturer/formHistory', {
@@ -135,7 +161,7 @@ router.get('/history', checkLecturer, async (req, res) => {
   }
 });
 
-// GET /forms/:id/view (view single form)
+// GET /forms/:id/view
 router.get('/forms/:id/view', checkLecturer, async (req, res) => {
   try {
     const form = await Form.findById(req.params.id)
@@ -146,7 +172,9 @@ router.get('/forms/:id/view', checkLecturer, async (req, res) => {
     if (!form) {
       return res.status(404).render('error', { message: 'Form not found' });
     }
-    form.priority = Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
+    if (!form.priority) {
+      form.priority = Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
+    }
     res.render('lecturer/formView', { 
       form, 
       activeMenu: 'formHistory', 
@@ -163,7 +191,7 @@ router.post('/:id/approve', checkLecturer, async (req, res) => {
   try {
     await Form.findByIdAndUpdate(req.params.id, {
       status: 'approved',
-      reviewers: req.user._id,
+      $push: { reviewers: req.user._id }, // Use $push to add if not exists
       reviewComment: req.body.comment || 'Approved by lecturer',
       reviewedAt: new Date()
     });
@@ -179,7 +207,7 @@ router.post('/:id/reject', checkLecturer, async (req, res) => {
   try {
     await Form.findByIdAndUpdate(req.params.id, {
       status: 'rejected',
-      reviewers: req.user._id,
+      $push: { reviewers: req.user._id }, // Use $push to add if not exists
       reviewComment: req.body.comment || 'Rejected by lecturer',
       reviewedAt: new Date()
     });

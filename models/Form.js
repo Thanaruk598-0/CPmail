@@ -39,4 +39,8 @@ const formSchema = new Schema({
   reviewedAt: { type: Date },
 }, { timestamps: true }); // ✅ auto createdAt + updatedAt
 
+formSchema.index({ reviewers: 1, submittedAt: 1 });
+formSchema.index({ section: 1, submittedAt: 1 });
+formSchema.index({ createdAt: 1 });
+
 module.exports = mongoose.model("Form", formSchema);

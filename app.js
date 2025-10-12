@@ -24,14 +24,14 @@ const Dashboard = require('./routes/adminDashboard');
 
 const lectureDashboard  = require('./routes/lecturer/lectureDashboard');
 const lecturerReportRoutes = require("./routes/lecturer/reports");
-const lecturerRouter = require('./routes/lecturer/formHistory');
+const lecturerformHistory = require('./routes/lecturer/formHistory');
 
 //fai
 const authRoutes = require("./routes/auth");
 
 //b
 const announcements = require('./routes/announcements');
-const reviewRouter = require('./routes/lecturer/review');
+const lecturerreview = require('./routes/lecturer/review');
 
 //ef
 const formTemplateRoutes = require("./routes/formTemplates");
@@ -102,15 +102,14 @@ app.use('/manageCourse', manageCourseRouter);
 app.use('/Dashboard', Dashboard);
 app.use('/lectureDashboard', lectureDashboard);
 app.use("/lecturer/reports", lecturerReportRoutes);
-app.use("/history", lecturerRouter);
+
+app.use("/lecturer/history", lecturerformHistory);
 
 
 app.use("/", authRoutes);
-
 app.use("/student", studentRouter);
-
 app.use('/lecturer/announcements', announcements);
-app.use('/lecturers', reviewRouter);
+app.use('/lecturer/review', lecturerreview);
 
 app.use("/form-templates", formTemplateRoutes);
 

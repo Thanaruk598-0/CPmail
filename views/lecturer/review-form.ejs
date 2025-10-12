@@ -14,6 +14,8 @@
 </head>
 
 <body>
+  <%- include('../partials/navbar', { user: currentUser, activeMenu: 'formHistory' }) %>  <!-- เพิ่ม navbar -->
+
 <div class="container py-4">
   <% if (!form) { %>
     <div class="alert alert-danger">ไม่พบข้อมูลคำร้อง</div>
@@ -182,34 +184,35 @@ window.addEventListener('load', function () {
   const ok = t => { msg.className='alert alert-success mt-3'; msg.textContent=t||'ดำเนินการสำเร็จ'; msg.classList.remove('d-none'); };
   const er = t => { msg.className='alert alert-danger mt-3';  msg.textContent=t||'เกิดข้อผิดพลาด'; msg.classList.remove('d-none'); };
 
-const REDIRECT_URL = 'http://localhost:3000/history/history#';
-const BASE_URL = '/lecturers/forms';
+  // แก้: BASE_URL และ REDIRECT_URL ให้ตรง path
+  const BASE_URL = '/lecturer/review/forms';
+  const REDIRECT_URL = '/lecturer/history';
 
-card.querySelector('#btnSaveFeedback').addEventListener('click', async () => {
-  try { 
-    ok((await postJSON(`${BASE_URL}/${FORM_ID}/feedback`, payload())).message || 'บันทึกความคิดเห็นเรียบร้อย'); 
-    // redirect หลังบันทึก
-    setTimeout(()=>location.href = REDIRECT_URL, 500);
-  } catch(e){ er('บันทึกไม่สำเร็จ: ' + e.message); }
-});
+  card.querySelector('#btnSaveFeedback').addEventListener('click', async () => {
+    try { 
+      ok((await postJSON(`${BASE_URL}/${FORM_ID}/feedback`, payload())).message || 'บันทึกความคิดเห็นเรียบร้อย'); 
+      // redirect หลังบันทึก
+      setTimeout(()=>location.href = REDIRECT_URL, 500);
+    } catch(e){ er('บันทึกไม่สำเร็จ: ' + e.message); }
+  });
 
-card.querySelector('#btnApprove').addEventListener('click', async () => {
-  if (!confirm('ยืนยันการ “อนุมัติ” คำร้องนี้ใช่หรือไม่?')) return;
-  try { 
-    ok((await postJSON(`${BASE_URL}/${FORM_ID}/approve`, payload())).message || 'อนุมัติเรียบร้อย'); 
-    // redirect หลังอนุมัติ
-    setTimeout(()=>location.href = REDIRECT_URL, 500);
-  } catch(e){ er('อนุมัติไม่สำเร็จ: ' + e.message); }
-});
+  card.querySelector('#btnApprove').addEventListener('click', async () => {
+    if (!confirm('ยืนยันการ “อนุมัติ” คำร้องนี้ใช่หรือไม่?')) return;
+    try { 
+      ok((await postJSON(`${BASE_URL}/${FORM_ID}/approve`, payload())).message || 'อนุมัติเรียบร้อย'); 
+      // redirect หลังอนุมัติ
+      setTimeout(()=>location.href = REDIRECT_URL, 500);
+    } catch(e){ er('อนุมัติไม่สำเร็จ: ' + e.message); }
+  });
 
-card.querySelector('#btnReject').addEventListener('click', async () => {
-  if (!ta.value.trim() && !confirm('คุณยังไม่ได้กรอกเหตุผล ต้องการไม่อนุมัติเลยหรือไม่?')) return;
-  try { 
-    ok((await postJSON(`${BASE_URL}/${FORM_ID}/reject`, payload())).message || 'ไม่อนุมัติเรียบร้อย'); 
-    // redirect หลังไม่อนุมัติ
-    setTimeout(()=>location.href = REDIRECT_URL, 500);
-  } catch(e){ er('ไม่อนุมัติไม่สำเร็จ: ' + e.message); }
-});
+  card.querySelector('#btnReject').addEventListener('click', async () => {
+    if (!ta.value.trim() && !confirm('คุณยังไม่ได้กรอกเหตุผล ต้องการไม่อนุมัติเลยหรือไม่?')) return;
+    try { 
+      ok((await postJSON(`${BASE_URL}/${FORM_ID}/reject`, payload())).message || 'ไม่อนุมัติเรียบร้อย'); 
+      // redirect หลังไม่อนุมัติ
+      setTimeout(()=>location.href = REDIRECT_URL, 500);
+    } catch(e){ er('ไม่อนุมัติไม่สำเร็จ: ' + e.message); }
+  });
 
 });
 </script>

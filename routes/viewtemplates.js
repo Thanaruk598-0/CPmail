@@ -4,29 +4,33 @@ const router = express.Router();
 const Form = require("../models/Form");
 const checkAdmin = require('../middleware/checkAdmin');
 
-// Mock currentUser (ถ้ายังไม่มีระบบ login จริง)
-const mockUser = {
-  name: "Admin User",
-  email: "admin@example.com",
-  role: "admin",
-  avatarUrl: "https://via.placeholder.com/32"
-};
+// ✅ ลบ mockUser ใช้ req.session.user แทน
 
-// GET /viewtemplates
-router.get("/",checkAdmin, async (req, res) => {
+// GET /allteplaetes (main list)
+router.get("/", checkAdmin, async (req, res) => {
   try {
-    // ดึงข้อมูลฟอร์มทั้งหมด
-    const forms = await Form.find()
+    // ✅ เพิ่ม: Filter สำหรับ admin (เช่น status=pending)
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+
+    // ดึงข้อมูลฟอร์มตาม filter
+    const forms = await Form.find(filter)
       .populate("submitter", "name email role avatarUrl")
       .populate("template", "title category")
-      .populate("reviewers", "name email role avatarUrl");
+      .populate("reviewers", "name email role avatarUrl")
+      .sort({ submittedAt: -1 });
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    const totalPages = Math.ceil(forms.length / limit);
+    const paginatedForms = forms.slice((page - 1) * limit, page * limit);
 
     res.render("admin/AllForms/ViewAllForm", {
-      forms,
+      forms: paginatedForms,
       query: req.query,
-      page: req.query.page || 1,
-      totalPages: 1,
-      currentUser: req.session.user || mockUser  // ✅ mock user ไว้ใช้
+      page,
+      totalPages,
+      currentUser: req.session.user  // ✅ ใช้ session
     });
   } catch (err) {
     console.error(err);
@@ -44,7 +48,7 @@ router.get("/view/:id", async (req, res) => {
 
     res.render("admin/Forms/viewform", {
       form,
-      currentUser: req.user || null,
+      currentUser: req.session.user || null,  // ✅ ใช้ session
     });
   } catch (err) {
     console.error(err);
